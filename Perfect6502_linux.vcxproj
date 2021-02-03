@@ -41,8 +41,8 @@
     <ClCompile Include="src\cbmbasic\plugin.c" />
     <ClCompile Include="src\cbmbasic\runtime.c" />
     <ClCompile Include="src\cbmbasic\runtime_init.c" />
-    <ClCompile Include="src\netlist_sim.c" />
-    <ClCompile Include="src\perfect6502.c" />
+    <ClCompile Include="src\netlist_sim.cpp" />
+    <ClCompile Include="src\perfect6502.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cbmbasic\console.h" />

@@ -73,6 +73,16 @@ c1c2(transnum_t tn, nodenum_t n)
 	return c;
 }
 
+enum group_contains_value_t {
+	contains_nothing,
+	contains_hi,
+	contains_pullup,
+	contains_pulldown,
+	contains_vcc,
+	contains_vss
+}; 
+
+
 typedef struct {
 	nodenum_t nodes;
 	nodenum_t transistors;
@@ -111,15 +121,7 @@ typedef struct {
 	nodenum_t *group;
 	count_t groupcount;
 	bitmap_t *groupbitmap;
-
-	enum {
-		contains_nothing,
-		contains_hi,
-		contains_pullup,
-		contains_pulldown,
-		contains_vcc,
-		contains_vss
-	} group_contains_value;
+	group_contains_value_t group_contains_value;
 } state_t;
 
 /************************************************************
@@ -487,42 +489,42 @@ add_nodes_left_dependant(state_t *state, nodenum_t a, nodenum_t b)
 }
 
 state_t *
-setupNodesAndTransistors(netlist_transdefs *transdefs, BOOL *node_is_pullup, nodenum_t nodes, nodenum_t transistors, nodenum_t vss, nodenum_t vcc)
+setupNodesAndTransistors(const netlist_transdefs *transdefs, const BOOL *node_is_pullup, nodenum_t nodes, nodenum_t transistors, nodenum_t vss, nodenum_t vcc)
 {
 	/* allocate state */
-	state_t *state = malloc(sizeof(state_t));
+	state_t *state = (state_t *)malloc(sizeof(state_t));
 	state->nodes = nodes;
 	state->transistors = transistors;
 	state->vss = vss;
 	state->vcc = vcc;
-	state->nodes_pullup = calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->nodes_pullup));
-	state->nodes_pulldown = calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->nodes_pulldown));
-	state->nodes_value = calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->nodes_value));
-	state->nodes_gates = malloc(state->nodes * sizeof(*state->nodes_gates));
+	state->nodes_pullup = (bitmap_t*)calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->nodes_pullup));
+	state->nodes_pulldown = (bitmap_t*)calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->nodes_pulldown));
+	state->nodes_value = (bitmap_t*)calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->nodes_value));
+	state->nodes_gates = (nodenum_t**)malloc(state->nodes * sizeof(*state->nodes_gates));
 	for (count_t i = 0; i < state->nodes; i++) {
-		state->nodes_gates[i] = calloc(state->nodes, sizeof(**state->nodes_gates));
+		state->nodes_gates[i] = (nodenum_t*)calloc(state->nodes, sizeof(**state->nodes_gates));
 	}
-	state->nodes_gatecount = calloc(state->nodes, sizeof(*state->nodes_gatecount));
-	state->nodes_c1c2offset = calloc(state->nodes + 1, sizeof(*state->nodes_c1c2offset));
-	state->nodes_dependants = calloc(state->nodes, sizeof(*state->nodes_dependants));
-	state->nodes_left_dependants = calloc(state->nodes, sizeof(*state->nodes_left_dependants));
-	state->nodes_dependant = malloc(state->nodes * sizeof(*state->nodes_dependant));
+	state->nodes_gatecount = (count_t*)calloc(state->nodes, sizeof(*state->nodes_gatecount));
+	state->nodes_c1c2offset = (count_t*)calloc(state->nodes + 1, sizeof(*state->nodes_c1c2offset));
+	state->nodes_dependants = (nodenum_t*)calloc(state->nodes, sizeof(*state->nodes_dependants));
+	state->nodes_left_dependants = (nodenum_t*)calloc(state->nodes, sizeof(*state->nodes_left_dependants));
+	state->nodes_dependant = (nodenum_t**)malloc(state->nodes * sizeof(*state->nodes_dependant));
 	for (count_t i = 0; i < state->nodes; i++) {
-		state->nodes_dependant[i] = calloc(state->nodes, sizeof(**state->nodes_dependant));
+		state->nodes_dependant[i] = (nodenum_t*)calloc(state->nodes, sizeof(**state->nodes_dependant));
 	}
-	state->nodes_left_dependant = malloc(state->nodes * sizeof(*state->nodes_left_dependant));
+	state->nodes_left_dependant = (nodenum_t**)malloc(state->nodes * sizeof(*state->nodes_left_dependant));
 	for (count_t i = 0; i < state->nodes; i++) {
-		state->nodes_left_dependant[i] = calloc(state->nodes, sizeof(**state->nodes_left_dependant));
+		state->nodes_left_dependant[i] = (nodenum_t*)calloc(state->nodes, sizeof(**state->nodes_left_dependant));
 	}
-	state->transistors_gate = calloc(state->transistors, sizeof(*state->transistors_gate));
-	state->transistors_c1 = calloc(state->transistors, sizeof(*state->transistors_c1));
-	state->transistors_c2 = calloc(state->transistors, sizeof(*state->transistors_c2));
-	state->transistors_on = calloc(WORDS_FOR_BITS(state->transistors), sizeof(*state->transistors_on));
-	state->list1 = calloc(state->nodes, sizeof(*state->list1));
-	state->list2 = calloc(state->nodes, sizeof(*state->list2));
-	state->listout_bitmap = calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->listout_bitmap));
-	state->group = malloc(state->nodes * sizeof(*state->group));
-	state->groupbitmap = calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->groupbitmap));
+	state->transistors_gate = (nodenum_t*)calloc(state->transistors, sizeof(*state->transistors_gate));
+	state->transistors_c1 = (nodenum_t*)calloc(state->transistors, sizeof(*state->transistors_c1));
+	state->transistors_c2 = (nodenum_t*)calloc(state->transistors, sizeof(*state->transistors_c2));
+	state->transistors_on = (bitmap_t*)calloc(WORDS_FOR_BITS(state->transistors), sizeof(*state->transistors_on));
+	state->list1 = (nodenum_t*)calloc(state->nodes, sizeof(*state->list1));
+	state->list2 = (nodenum_t*)calloc(state->nodes, sizeof(*state->list2));
+	state->listout_bitmap = (bitmap_t*)calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->listout_bitmap));
+	state->group = (nodenum_t*)malloc(state->nodes * sizeof(*state->group));
+	state->groupbitmap = (bitmap_t*)calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->groupbitmap));
 	state->listin.list = state->list1;
         state->listin.count = 0;
 	state->listout.list = state->list2;
@@ -562,7 +564,7 @@ setupNodesAndTransistors(netlist_transdefs *transdefs, BOOL *node_is_pullup, nod
 
 	/* cross reference transistors in nodes data structures */
 	/* start by computing how many c1c2 entries should be created for each node */
-	count_t *c1c2count = calloc(state->nodes, sizeof(*c1c2count));
+	count_t *c1c2count = (count_t *)calloc(state->nodes, sizeof(*c1c2count));
 	count_t c1c2total = 0;
 	for (i = 0; i < state->transistors; i++) {
 		nodenum_t gate = state->transistors_gate[i];
@@ -579,7 +581,7 @@ setupNodesAndTransistors(netlist_transdefs *transdefs, BOOL *node_is_pullup, nod
 	}
 	state->nodes_c1c2offset[i] = c1c2offset;
 	/* create and fill the nodes_c1c2s array according to these offsets */
-	state->nodes_c1c2s = calloc(c1c2total, sizeof(*state->nodes_c1c2s));
+	state->nodes_c1c2s = (c1c2_t*)calloc(c1c2total, sizeof(*state->nodes_c1c2s));
 	memset(c1c2count, 0, state->nodes * sizeof(*c1c2count));
 	for (i = 0; i < state->transistors; i++) {
 		nodenum_t c1 = state->transistors_c1[i];
@@ -696,7 +698,7 @@ isNodeHigh(state_t *state, nodenum_t nn)
  ************************************************************/
 
 unsigned int
-readNodes(state_t *state, int count, nodenum_t *nodelist)
+readNodes(state_t *state, int count, const nodenum_t *nodelist)
 {
 	int result = 0;
 	for (int i = count - 1; i >= 0; i--) {
@@ -707,7 +709,7 @@ readNodes(state_t *state, int count, nodenum_t *nodelist)
 }
 
 void
-writeNodes(state_t *state, int count, nodenum_t *nodelist, int v)
+writeNodes(state_t *state, int count, const nodenum_t *nodelist, int v)
 {
 	for (int i = 0; i < 8; i++, v >>= 1)
 	setNode(state, nodelist[i], v & 1);

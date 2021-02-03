@@ -20,11 +20,13 @@
  THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
+#include <iterator>
 #include "types.h"
 #include "netlist_sim.h"
 /* nodes & transistors */
 #include "netlist_6502.h"
+#include "perfect6502.h"
 
 /************************************************************
  *
@@ -35,19 +37,22 @@
 uint16_t
 readAddressBus(void *state)
 {
-	return readNodes(state, 16, (nodenum_t[]){ ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15 });
+	static constexpr nodenum_t nodes[] = { ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15 };
+	return readNodes(state, std::size(nodes), nodes);
 }
 
 uint8_t
 readDataBus(void *state)
 {
-	return readNodes(state, 8, (nodenum_t[]){ db0, db1, db2, db3, db4, db5, db6, db7 });
+	static constexpr nodenum_t nodes[] = { db0, db1, db2, db3, db4, db5, db6, db7 };
+	return readNodes(state, std::size(nodes), nodes);
 }
 
 void
 writeDataBus(void *state, uint8_t d)
 {
-	writeNodes(state, 8, (nodenum_t[]){ db0, db1, db2, db3, db4, db5, db6, db7 }, d);
+	static constexpr nodenum_t nodes[] = { db0, db1, db2, db3, db4, db5, db6, db7 };
+	writeNodes(state, std::size(nodes), nodes, d);
 }
 
 BOOL
@@ -59,49 +64,58 @@ readRW(void *state)
 uint8_t
 readA(void *state)
 {
-	return readNodes(state, 8, (nodenum_t[]){ a0,a1,a2,a3,a4,a5,a6,a7 });
+	static constexpr nodenum_t nodes[] = { a0,a1,a2,a3,a4,a5,a6,a7 };
+	return readNodes(state, std::size(nodes), nodes);
 }
 
 uint8_t
 readX(void *state)
 {
-	return readNodes(state, 8, (nodenum_t[]){ x0,x1,x2,x3,x4,x5,x6,x7 });
+	static constexpr nodenum_t nodes[] = { x0,x1,x2,x3,x4,x5,x6,x7 };
+	return readNodes(state, std::size(nodes), nodes);
 }
 
 uint8_t
 readY(void *state)
 {
-	return readNodes(state, 8, (nodenum_t[]){ y0,y1,y2,y3,y4,y5,y6,y7 });
+	static constexpr nodenum_t nodes[] = { y0,y1,y2,y3,y4,y5,y6,y7 };
+	return readNodes(state, std::size(nodes), nodes);
 }
 
 uint8_t
 readP(void *state)
 {
-	return readNodes(state, 8, (nodenum_t[]){ p0,p1,p2,p3,p4,p5,p6,p7 });
+	static constexpr nodenum_t nodes[] = { p0,p1,p2,p3,p4,p5,p6,p7 };
+	return readNodes(state, std::size(nodes), nodes);
 }
 
 uint8_t
 readIR(void *state)
 {
-	return readNodes(state, 8, (nodenum_t[]){ notir0,notir1,notir2,notir3,notir4,notir5,notir6,notir7 }) ^ 0xFF;
+	static constexpr nodenum_t nodes[] = { notir0,notir1,notir2,notir3,notir4,notir5,notir6,notir7 };
+	return readNodes(state, std::size(nodes), nodes)  ^ 0xFF;
+
 }
 
 uint8_t
 readSP(void *state)
 {
-	return readNodes(state, 8, (nodenum_t[]){ s0,s1,s2,s3,s4,s5,s6,s7 });
+	static constexpr nodenum_t nodes[] = { s0,s1,s2,s3,s4,s5,s6,s7 };
+	return readNodes(state, std::size(nodes), nodes);
 }
 
 uint8_t
 readPCL(void *state)
 {
-	return readNodes(state, 8, (nodenum_t[]){ pcl0,pcl1,pcl2,pcl3,pcl4,pcl5,pcl6,pcl7 });
+	static constexpr nodenum_t nodes[] = { pcl0,pcl1,pcl2,pcl3,pcl4,pcl5,pcl6,pcl7 };
+	return readNodes(state, std::size(nodes), nodes);
 }
 
 uint8_t
 readPCH(void *state)
 {
-	return readNodes(state, 8, (nodenum_t[]){ pch0,pch1,pch2,pch3,pch4,pch5,pch6,pch7 });
+	static constexpr nodenum_t nodes[] = { pch0,pch1,pch2,pch3,pch4,pch5,pch6,pch7 };
+	return readNodes(state, std::size(nodes), nodes);
 }
 
 uint16_t
