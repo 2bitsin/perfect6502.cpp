@@ -41,7 +41,6 @@
     <ClCompile Include="src\cbmbasic\plugin.c" />
     <ClCompile Include="src\cbmbasic\runtime.c" />
     <ClCompile Include="src\cbmbasic\runtime_init.c" />
-    <ClCompile Include="src\netlist_sim.cpp" />
     <ClCompile Include="src\perfect6502.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -52,8 +51,6 @@
     <ClInclude Include="src\cbmbasic\runtime.h" />
     <ClInclude Include="src\cbmbasic\runtime_init.h" />
     <ClInclude Include="src\cbmbasic\stat.h" />
-    <ClInclude Include="src\netlist_6502.h" />
-    <ClInclude Include="src\netlist_sim.h" />
     <ClInclude Include="src\perfect6502.h" />
     <ClInclude Include="src\types.h" />
   </ItemGroup>
