@@ -4169,6 +4169,8 @@ getGroupValue(state_t *state)
 		case contains_pulldown:
 		case contains_nothing:    
 			return NO;
+		default:
+			throw state;
 	}
 }
 
@@ -4320,9 +4322,10 @@ setupNodesAndTransistors(const netlist_transdefs *transdefs, const BOOL *node_is
 	/* copy transistors into r/w data structure */
 	count_t j = 0;
 	for (i = 0; i < state->transistors; i++) {
-		nodenum_t gate = transdefs[i].gate;
-		nodenum_t c1 = transdefs[i].c1;
-		nodenum_t c2 = transdefs[i].c2;
+		// TODO , verify this is good
+		nodenum_t gate =	static_cast<nodenum_t>(transdefs[i].gate);
+		nodenum_t c1 =		static_cast<nodenum_t>(transdefs[i].c1);
+		nodenum_t c2 =		static_cast<nodenum_t>(transdefs[i].c2);
 		/* skip duplicate transistors */
 		BOOL found = NO;
 		for (count_t j2 = 0; j2 < j; j2++) {
@@ -4506,21 +4509,21 @@ uint16_t
 readAddressBus(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15 };
-	return readNodes(state, std::size(nodes), nodes);
+	return (uint16_t)readNodes(state, (int)std::size(nodes), nodes);
 }
 
 uint8_t
 readDataBus(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { db0, db1, db2, db3, db4, db5, db6, db7 };
-	return readNodes(state, std::size(nodes), nodes);
+	return (uint8_t)readNodes(state, (int)std::size(nodes), nodes);
 }
 
 void
 writeDataBus(state_t *state, uint8_t d)
 {
 	static constexpr nodenum_t nodes[] = { db0, db1, db2, db3, db4, db5, db6, db7 };
-	writeNodes(state, std::size(nodes), nodes, d);
+	writeNodes(state, (int)std::size(nodes), nodes, d);
 }
 
 BOOL
@@ -4533,35 +4536,35 @@ uint8_t
 readA(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { a0,a1,a2,a3,a4,a5,a6,a7 };
-	return readNodes(state, std::size(nodes), nodes);
+	return (uint8_t)readNodes(state, (int)std::size(nodes), nodes);
 }
 
 uint8_t
 readX(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { x0,x1,x2,x3,x4,x5,x6,x7 };
-	return readNodes(state, std::size(nodes), nodes);
+	return (uint8_t)readNodes(state, (int)std::size(nodes), nodes);
 }
 
 uint8_t
 readY(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { y0,y1,y2,y3,y4,y5,y6,y7 };
-	return readNodes(state, std::size(nodes), nodes);
+	return (uint8_t)readNodes(state, (int)std::size(nodes), nodes);
 }
 
 uint8_t
 readP(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { p0,p1,p2,p3,p4,p5,p6,p7 };
-	return readNodes(state, std::size(nodes), nodes);
+	return (uint8_t)readNodes(state, (int)std::size(nodes), nodes);
 }
 
 uint8_t
 readIR(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { notir0,notir1,notir2,notir3,notir4,notir5,notir6,notir7 };
-	return readNodes(state, std::size(nodes), nodes)  ^ 0xFF;
+	return (uint8_t)readNodes(state, (int)std::size(nodes), nodes)  ^ 0xFF;
 
 }
 
@@ -4569,27 +4572,27 @@ uint8_t
 readSP(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { s0,s1,s2,s3,s4,s5,s6,s7 };
-	return readNodes(state, std::size(nodes), nodes);
+	return (uint8_t)readNodes(state, (int)std::size(nodes), nodes);
 }
 
 uint8_t
 readPCL(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { pcl0,pcl1,pcl2,pcl3,pcl4,pcl5,pcl6,pcl7 };
-	return readNodes(state, std::size(nodes), nodes);
+	return (uint8_t)readNodes(state, (int)std::size(nodes), nodes);
 }
 
 uint8_t
 readPCH(state_t *state)
 {
 	static constexpr nodenum_t nodes[] = { pch0,pch1,pch2,pch3,pch4,pch5,pch6,pch7 };
-	return readNodes(state, std::size(nodes), nodes);
+	return (uint8_t)readNodes(state, (int)std::size(nodes), nodes);
 }
 
 uint16_t
 readPC(state_t *state)
 {
-	return (readPCH(state) << 8) | readPCL(state);
+	return (uint16_t)(((uint16_t)readPCH(state) << 8) | (uint16_t)readPCL(state));
 }
 
 /************************************************************
@@ -4645,9 +4648,18 @@ step(state_t *state)
 	cycle++;
 }
 
+#include "utils/bitmap.hpp"
+void foo()
+{
+	constexpr bitmap<1720> b {{ 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0 }};
+
+	auto c = b;
+}
+
 state_t *
 initAndResetChip()
 {
+	foo();
 	/* set up data structures for efficient emulation */
 	nodenum_t nodes = sizeof(netlist_6502_node_is_pullup)/sizeof(*netlist_6502_node_is_pullup);
 	nodenum_t transistors = sizeof(netlist_6502_transdefs)/sizeof(*netlist_6502_transdefs);
@@ -4722,3 +4734,6 @@ chipStatus(state_t *state)
 	}
 	printf("\n");
 }
+
+
+
