@@ -50,6 +50,12 @@ struct bitmap
 
 	static constexpr auto size() { return num_bits ; }
 
+	constexpr auto clear() 
+	{
+		for (auto&& cell : store) 
+			cell = word_type { 0 };
+	}
+
 private:
 
 	template <std::size_t ... I>

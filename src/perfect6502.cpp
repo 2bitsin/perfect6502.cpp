@@ -243,6 +243,7 @@ namespace node_names
 }
 
 static inline constexpr auto Number_of_nodes = 1725;
+static inline constexpr auto Number_of_transistors = 3510;
 
 constexpr bitmap<Number_of_nodes> netlist_6502_node_is_pullup
 {
@@ -275,7 +276,8 @@ constexpr bitmap<Number_of_nodes> netlist_6502_node_is_pullup
 	1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1
 };
 
-constexpr netlist_transdefs netlist_6502_transdefs [] = {
+constexpr netlist_transdefs netlist_6502_transdefs [Number_of_transistors] = 
+{
 	{ 357, 558, 217 },
 	{ 1608, 657, 349 },
 	{ 412, 558, 1146 },
@@ -3926,55 +3928,6 @@ get_bitmap (bitmap_t* bitmap, int index)
 
 /************************************************************
  *
- * Algorithms for Nodes
- *
- ************************************************************/
-
-/*
- * The "value" propertiy of VCC and GND is never evaluated in the code,
- * so we don't bother initializing it properly or special-casing writes.
- */
-
-/*
-static inline void
-set_nodes_pullup (state_t* state, transnum_t t, BOOL s)
-{
-	state->nodes_pullup.set(t, s);
-}
-
-static inline BOOL
-get_nodes_pullup (state_t* state, transnum_t t)
-{
-	return state->nodes_pullup.get(t);
-}
-
-static inline void
-set_nodes_pulldown (state_t* state, transnum_t t, BOOL s)
-{
-	state->nodes_pulldown.set(t, s);
-}
-
-static inline BOOL
-get_nodes_pulldown (state_t* state, transnum_t t)
-{
-	return state->nodes_pulldown.get(t);
-}
-
-static inline void
-set_nodes_value (state_t* state, transnum_t t, BOOL s)
-{
-	state->nodes_value.set(t, s);
-}
-
-static inline BOOL
-get_nodes_value (state_t* state, transnum_t t)
-{
-	return state->nodes_value.get(t);
-}
-*/
-
-/************************************************************
- *
  * Algorithms for Transistors
  *
  ************************************************************/
@@ -4195,16 +4148,12 @@ recalcNode (state_t* state, nodenum_t node)
 			if (newv)
 			{
 				for (count_t g = 0; g < state->nodes_left_dependants [nn]; g++)
-				{
 					listout_add (state, state->nodes_left_dependant [nn][g]);
-				}
 			}
 			else
 			{
 				for (count_t g = 0; g < state->nodes_dependants [nn]; g++)
-				{
 					listout_add (state, state->nodes_dependant [nn][g]);
-				}
 			}
 		}
 	}
