@@ -23,7 +23,7 @@ struct array_list
 	}
 
 	constexpr array_list(std::initializer_list<value_type> values)
-	: _size { prev._size }		
+	: _size { values.size() }		
 	{
 		auto to_copy = std::min(values.size(), capacity());
 		for (auto i = 0u; i < to_copy; ++i)
@@ -64,6 +64,11 @@ struct array_list
 		return _size;
 	}
 
+	constexpr auto empty() const
+	{
+		return size () == 0;
+	}
+
 	static constexpr auto capacity () 
 	{
 		return _Max_size;
@@ -78,7 +83,7 @@ struct array_list
 	}
 
 private:
-	value_type _data { };
 	std::size_t _size { 0u };
+	value_type _data [_Max_size] { };
 };
 

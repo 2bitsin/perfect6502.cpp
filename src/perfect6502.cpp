@@ -31,7 +31,10 @@
 #include <cstring>
 #include <iterator>
 #include <initializer_list>
+
 #include "utils/bitmap.hpp"
+#include "utils/array_list.hpp"
+
 #include "types.h"
 #include "perfect6502.h"
 
@@ -3817,12 +3820,13 @@ typedef unsigned int bitmap_t;
 #endif
 
 /* list of nodes that need to be recalculated */
+/*
 typedef struct
 {
 	nodenum_t* list;
 	count_t count;
 } list_t;
-
+*/
 /* a transistor from the point of view of one of the connected nodes */
 typedef struct
 {
@@ -3850,10 +3854,11 @@ enum group_contains_value_t
 
 struct state_t
 {
-	nodenum_t nodes;
-	nodenum_t transistors;
-	nodenum_t vss;
-	nodenum_t vcc;
+	nodenum_t transistors = Number_of_transistors;
+
+	static inline constexpr auto nodes = Number_of_nodes;
+	static inline constexpr nodenum_t vss = node_names::vss;
+	static inline constexpr nodenum_t vcc = node_names::vcc;
 
 	/* everything that describes a node */
 	bitmap<Number_of_nodes> nodes_pullup;
@@ -3873,16 +3878,10 @@ struct state_t
 	nodenum_t* transistors_gate;
 	nodenum_t* transistors_c1;
 	nodenum_t* transistors_c2;
+
 	bitmap<Number_of_transistors>  transistors_on;
-
-	/* the nodes we are working with */
-	nodenum_t* list1;
-	list_t listin;
-
-	/* the indirect nodes we are collecting for the next run */
-	nodenum_t* list2;
-	list_t listout;
-
+	array_list<nodenum_t, Number_of_nodes> listin;
+	array_list<nodenum_t, Number_of_nodes> listout;
 	bitmap<Number_of_nodes> listout_bitmap;
 
 	nodenum_t* group;
@@ -3901,37 +3900,20 @@ struct state_t
  *
  ************************************************************/
 
-static inline nodenum_t
-listin_get (state_t* state, count_t i)
-{
-	return state->listin.list [i];
-}
-
-
-//static inline void
-//lists_switch (state_t* state)
-//{
-//	//list_t tmp = state->listin;
-//	//state->listin = state->listout;
-//	//state->listout = tmp;
-//
-//	
-//}
-
 static inline void
-listout_clear (state_t* state)
+listout_clear (state_t& state)
 {
-	state->listout.count = 0;
-	state->listout_bitmap.clear();
+	state.listout.clear();
+	state.listout_bitmap.clear();
 }
 
 static inline void
-listout_add (state_t* state, nodenum_t i)
+listout_add (state_t& state, nodenum_t i)
 {
-	if (!state->listout_bitmap.get(i))
+	if (!state.listout_bitmap.get(i))
 	{
-		state->listout.list [state->listout.count++] = i;
-		state->listout_bitmap.set(i, 1);
+		state.listout.push(i);
+		state.listout_bitmap.set(i, 1);
 	}
 }
 
@@ -4096,12 +4078,12 @@ recalcNode (state_t* state, nodenum_t node)
 			if (newv)
 			{
 				for (count_t g = 0; g < state->nodes_left_dependants [nn]; g++)
-					listout_add (state, state->nodes_left_dependant [nn][g]);
+					listout_add (*state, state->nodes_left_dependant [nn][g]);
 			}
 			else
 			{
 				for (count_t g = 0; g < state->nodes_dependants [nn]; g++)
-					listout_add (state, state->nodes_dependant [nn][g]);
+					listout_add (*state, state->nodes_dependant [nn][g]);
 			}
 		}
 	}
@@ -4118,10 +4100,10 @@ recalcNodeList (state_t* state)
  * secondary list
  */
 		std::swap(state->listin, state->listout);
-		if (!state->listin.count)
+		if (state->listin.empty())
 			break;
 
-		listout_clear (state);
+		listout_clear (*state);
 
 		/*
 		 * for all nodes, follow their paths through
@@ -4130,13 +4112,13 @@ recalcNodeList (state_t* state)
 		 * all transistors controlled by this path, collecting
 		 * all nodes that changed because of it for the next run
 		 */
-		for (count_t i = 0; i < state->listin.count; i++)
+		for (count_t i = 0; i < state->listin.size(); i++)
 		{
-			nodenum_t n = listin_get (state, i);
+			nodenum_t n = state->listin [i]; 
 			recalcNode (state, n);
 		}
 	}
-	listout_clear (state);
+	listout_clear (*state);
 }
 
 /************************************************************
@@ -4179,10 +4161,10 @@ setupNodesAndTransistors ()
 
 	/* allocate state */
 	state_t& state = G_6502_state;
-	state.nodes = nodes;
-	state.transistors = transistors;
-	state.vss = vss;
-	state.vcc = vcc;
+
+
+
+
 
 	state.nodes_pullup.clear();
 	state.nodes_pulldown.clear();
@@ -4211,14 +4193,14 @@ setupNodesAndTransistors ()
 	state.transistors_c1 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c1));
 	state.transistors_c2 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c2));
 	state.transistors_on.clear();
-	state.list1 = (nodenum_t*)calloc (state.nodes, sizeof (*state.list1));
-	state.list2 = (nodenum_t*)calloc (state.nodes, sizeof (*state.list2));
+	//state.list1 = (nodenum_t*)calloc (state.nodes, sizeof (*state.list1));
+	//state.list2 = (nodenum_t*)calloc (state.nodes, sizeof (*state.list2));
 	state.group = (nodenum_t*)malloc (state.nodes * sizeof (*state.group));
 	state.groupbitmap.clear();
-	state.listin.list = state.list1;
-	state.listin.count = 0;
-	state.listout.list = state.list2;
-	state.listout.count = 0;
+
+	
+	state.listin.clear();	
+	state.listout.clear();
 	state.listout_bitmap.clear();
 
 
@@ -4348,19 +4330,15 @@ destroyNodesAndTransistors (state_t* state)
 	free (state->transistors_c1);
 	free (state->transistors_c2);
 	
-	free (state->list1);
-	free (state->list2);
 	
 	free (state->group);
-	
-	//free (state);
 }
 
 void
 stabilizeChip (state_t* state)
 {
 	for (count_t i = 0; i < state->nodes; i++)
-		listout_add (state, i);
+		listout_add (*state, i);
 
 	recalcNodeList (state);
 }
@@ -4376,7 +4354,7 @@ setNode (state_t* state, nodenum_t nn, BOOL s)
 {
 	state->nodes_pullup.set (nn, s);
 	state->nodes_pulldown.set (nn, !s);
-	listout_add (state, nn);
+	listout_add (*state, nn);
 
 	recalcNodeList (state);
 }
