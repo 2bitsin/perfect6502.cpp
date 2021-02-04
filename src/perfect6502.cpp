@@ -3826,23 +3826,23 @@ recalcNodeList (state_t& state)
  ************************************************************/
 
 static inline void
-add_nodes_dependant (state_t* state, nodenum_t a, nodenum_t b)
+add_nodes_dependant (state_t& state, nodenum_t a, nodenum_t b)
 {
-	for (count_t g = 0; g < state->nodes_dependants [a]; g++)
-		if (state->nodes_dependant [a][g] == b)
+	for (count_t g = 0; g < state.nodes_dependants [a]; g++)
+		if (state.nodes_dependant [a][g] == b)
 			return;
 
-	state->nodes_dependant [a][state->nodes_dependants [a]++] = b;
+	state.nodes_dependant [a][state.nodes_dependants [a]++] = b;
 }
 
 static inline void
-add_nodes_left_dependant (state_t* state, nodenum_t a, nodenum_t b)
+add_nodes_left_dependant (state_t& state, nodenum_t a, nodenum_t b)
 {
-	for (count_t g = 0; g < state->nodes_left_dependants [a]; g++)
-		if (state->nodes_left_dependant [a][g] == b)
+	for (count_t g = 0; g < state.nodes_left_dependants [a]; g++)
+		if (state.nodes_left_dependant [a][g] == b)
 			return;
 
-	state->nodes_left_dependant [a][state->nodes_left_dependants [a]++] = b;
+	state.nodes_left_dependant [a][state.nodes_left_dependants [a]++] = b;
 }
 
 
@@ -3937,14 +3937,14 @@ setupNodesAndTransistors ()
 			transnum_t t = state.nodes_gates [i][g];
 			nodenum_t c1 = state.transistors_c1 [t];
 			if (c1 != vss && c1 != vcc)
-				add_nodes_dependant (&state, i, c1);
+				add_nodes_dependant (state, i, c1);
 			nodenum_t c2 = state.transistors_c2 [t];
 			if (c2 != vss && c2 != vcc)
-				add_nodes_dependant (&state, i, c2);
+				add_nodes_dependant (state, i, c2);
 			if (c1 != vss && c1 != vcc)
-				add_nodes_left_dependant (&state, i, c1);
+				add_nodes_left_dependant (state, i, c1);
 			else
-				add_nodes_left_dependant (&state, i, c2);
+				add_nodes_left_dependant (state, i, c2);
 		}
 	}
 
@@ -3962,18 +3962,18 @@ setupNodesAndTransistors ()
 }
 
 void
-destroyNodesAndTransistors (state_t* state)
+destroyNodesAndTransistors (state_t& state)
 {
-	free (state->nodes_c1c2s);
+	free (state.nodes_c1c2s);
 }
 
 void
-stabilizeChip (state_t* state)
+stabilizeChip (state_t& state)
 {
-	for (count_t i = 0; i < state->nodes; i++)
-		listout_add (*state, i);
+	for (count_t i = 0; i < state.nodes; i++)
+		listout_add (state, i);
 
-	recalcNodeList (*state);
+	recalcNodeList (state);
 }
 
 /************************************************************
@@ -4191,7 +4191,7 @@ initAndResetChip ()
 	setNode (*state, irq, 1);
 	setNode (*state, nmi, 1);
 
-	stabilizeChip (state);
+	stabilizeChip (*state);
 
 	/* hold RESET for 8 cycles */
 	for (int i = 0; i < 16; i++)
@@ -4207,7 +4207,7 @@ initAndResetChip ()
 }
 
 void
-destroyChip (state_t* state)
+destroyChip (state_t& state)
 {
 	destroyNodesAndTransistors (state);
 }
