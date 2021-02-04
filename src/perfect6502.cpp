@@ -3865,10 +3865,11 @@ struct state_t
 	bitmap<Number_of_nodes> nodes_pulldown;
 	bitmap<Number_of_nodes> nodes_value;
 	bitmap<Number_of_nodes> listout_bitmap;
+	bitmap<Number_of_nodes> groupbitmap;
 	bitmap<Number_of_transistors>  transistors_on;
 	array_list<nodenum_t, Number_of_nodes> listin;
 	array_list<nodenum_t, Number_of_nodes> listout;
-	bitmap<Number_of_nodes> groupbitmap;
+	array_list<nodenum_t, Number_of_nodes> group;
 
 	nodenum_t** nodes_gates;
 	c1c2_t* nodes_c1c2s;
@@ -3885,8 +3886,8 @@ struct state_t
 	nodenum_t* transistors_c2;
 
 
-	nodenum_t* group;
-	count_t groupcount;
+	//nodenum_t* group;
+	//count_t groupcount;
 	group_contains_value_t group_contains_value;
 };
 
@@ -3934,14 +3935,14 @@ listout_add (state_t& state, nodenum_t i)
 static inline void
 group_clear (state_t* state)
 {
-	state->groupcount = 0;
+	state->group.clear();
 	state->groupbitmap.clear();
 }
 
 static inline void
 group_add (state_t* state, nodenum_t i)
 {
-	state->group [state->groupcount++] = i;
+	state->group.push(i);
 	state->groupbitmap.set(i, 1);
 }
 
@@ -3960,7 +3961,7 @@ group_contains (state_t* state, nodenum_t el)
 static inline count_t
 group_count (state_t* state)
 {
-	return state->groupcount;
+	return state->group.size();
 }
 
 /************************************************************
@@ -4193,9 +4194,8 @@ setupNodesAndTransistors ()
 	state.transistors_c1 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c1));
 	state.transistors_c2 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c2));
 	state.transistors_on.clear();
-	//state.list1 = (nodenum_t*)calloc (state.nodes, sizeof (*state.list1));
-	//state.list2 = (nodenum_t*)calloc (state.nodes, sizeof (*state.list2));
-	state.group = (nodenum_t*)malloc (state.nodes * sizeof (*state.group));
+
+	state.group.clear();
 	state.groupbitmap.clear();
 
 	
@@ -4331,7 +4331,7 @@ destroyNodesAndTransistors (state_t* state)
 	free (state->transistors_c2);
 	
 	
-	free (state->group);
+	
 }
 
 void
