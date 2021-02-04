@@ -4179,10 +4179,8 @@ setupNodesAndTransistors ()
 		for (count_t j2 = 0; j2 < j; j2++)
 		{
 			if (state.transistors_gate [j2] == gate &&
-				((state.transistors_c1 [j2] == c1 &&
-					state.transistors_c2 [j2] == c2) ||
-					(state.transistors_c1 [j2] == c2 &&
-						state.transistors_c2 [j2] == c1)))
+				 ((state.transistors_c1 [j2] == c1 && state.transistors_c2 [j2] == c2) ||
+					(state.transistors_c1 [j2] == c2 && state.transistors_c2 [j2] == c1)))
 			{
 				found = YES;
 			}
@@ -4195,6 +4193,12 @@ setupNodesAndTransistors ()
 			j++;
 		}
 	}
+	//if (state.transistors != j)
+	//#ifdef _MSC_VER
+	//	__debugbreak();
+	//#else
+	//	__builtin_trap();
+	//#endif
 	state.transistors = j;
 
 	/* cross reference transistors in nodes data structures */
