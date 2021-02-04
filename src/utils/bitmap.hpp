@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <utility>
 #include <initializer_list>
+#include <algorithm>
 
 template <std::size_t _Num_bits, typename _Word_type = std::uint64_t>
 struct bitmap
@@ -19,14 +20,35 @@ struct bitmap
 	: store { 0u }
 	{
 		for (auto i = 0u; i < num_bits; ++i)
-		{
-			const auto m = word_type(1) << (i % word_size);
-			if (values[i])
-				store [i / word_size] |= m;
-			else
-				store [i / word_size] &= ~m;
-		}
+			set (i, values[i]);
 	}
+
+	constexpr bitmap(std::initializer_list<int> values)
+	:	store { 0u }
+	{		
+		const auto x = std::min (num_bits, values.size());
+		for (auto i = 0u; i < x; ++i)
+			set (i, *(values.begin() + i));
+	}
+
+	constexpr void set(std::size_t index, bool value)
+	{
+		index = index % num_bits;
+		const auto m = word_type(1) << (index % word_size);
+		if (value)
+			store [index / word_size] |= m;
+		else
+			store [index / word_size] &= ~m;
+	}
+
+	constexpr bool get(std::size_t index) const
+	{
+		index = index % num_bits;
+		const auto m = word_type(1) << (index % word_size);
+		return !!(store [index / word_size] & m);
+	}
+
+	static constexpr auto size() { return num_bits ; }
 
 private:
 

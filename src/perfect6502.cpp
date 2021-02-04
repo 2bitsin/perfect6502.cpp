@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iterator>
+#include "utils/bitmap.hpp"
 #include "types.h"
 #include "perfect6502.h"
 
@@ -221,7 +222,7 @@ enum {
 	y7 = 843,
 };
 
-constexpr BOOL netlist_6502_node_is_pullup[] = {
+constexpr bitmap<1725> netlist_6502_node_is_pullup {
 	1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1,
 	1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0,
 	1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0,
@@ -4271,8 +4272,9 @@ add_nodes_left_dependant(state_t *state, nodenum_t a, nodenum_t b)
 	state->nodes_left_dependant[a][state->nodes_left_dependants[a]++] = b;
 }
 
+template <typename _Bitmap>
 state_t *
-setupNodesAndTransistors(const netlist_transdefs *transdefs, const BOOL *node_is_pullup, nodenum_t nodes, nodenum_t transistors, nodenum_t vss, nodenum_t vcc)
+setupNodesAndTransistors(const netlist_transdefs *transdefs, const _Bitmap& node_is_pullup, nodenum_t nodes, nodenum_t transistors, nodenum_t vss, nodenum_t vcc)
 {
 	/* allocate state */
 	state_t *state = (state_t *)malloc(sizeof(state_t));
@@ -4283,6 +4285,7 @@ setupNodesAndTransistors(const netlist_transdefs *transdefs, const BOOL *node_is
 	state->nodes_pullup = (bitmap_t*)calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->nodes_pullup));
 	state->nodes_pulldown = (bitmap_t*)calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->nodes_pulldown));
 	state->nodes_value = (bitmap_t*)calloc(WORDS_FOR_BITS(state->nodes), sizeof(*state->nodes_value));
+
 	state->nodes_gates = (nodenum_t**)malloc(state->nodes * sizeof(*state->nodes_gates));
 	for (count_t i = 0; i < state->nodes; i++) {
 		state->nodes_gates[i] = (nodenum_t*)calloc(state->nodes, sizeof(**state->nodes_gates));
@@ -4316,7 +4319,7 @@ setupNodesAndTransistors(const netlist_transdefs *transdefs, const BOOL *node_is
 	count_t i;
 	/* copy nodes into r/w data structure */
 	for (i = 0; i < state->nodes; i++) {
-		set_nodes_pullup(state, i, node_is_pullup[i]);
+		set_nodes_pullup(state, i, node_is_pullup.get(i));
 		state->nodes_gatecount[i] = 0;
 	}
 	/* copy transistors into r/w data structure */
@@ -4651,9 +4654,6 @@ step(state_t *state)
 #include "utils/bitmap.hpp"
 void foo()
 {
-	constexpr bitmap<1720> b {{ 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0 }};
-
-	auto c = b;
 }
 
 state_t *
@@ -4661,7 +4661,7 @@ initAndResetChip()
 {
 	foo();
 	/* set up data structures for efficient emulation */
-	nodenum_t nodes = sizeof(netlist_6502_node_is_pullup)/sizeof(*netlist_6502_node_is_pullup);
+	nodenum_t nodes = netlist_6502_node_is_pullup.size();  //sizeof(netlist_6502_node_is_pullup)/sizeof(*netlist_6502_node_is_pullup);
 	nodenum_t transistors = sizeof(netlist_6502_transdefs)/sizeof(*netlist_6502_transdefs);
 	state_t *state = setupNodesAndTransistors(netlist_6502_transdefs,
 										   netlist_6502_node_is_pullup,
