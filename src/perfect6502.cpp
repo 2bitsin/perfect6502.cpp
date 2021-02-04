@@ -3935,6 +3935,7 @@ get_bitmap (bitmap_t* bitmap, int index)
  * so we don't bother initializing it properly or special-casing writes.
  */
 
+/*
 static inline void
 set_nodes_pullup (state_t* state, transnum_t t, BOOL s)
 {
@@ -3970,6 +3971,7 @@ get_nodes_value (state_t* state, transnum_t t)
 {
 	return state->nodes_value.get(t);
 }
+*/
 
 /************************************************************
  *
@@ -4109,18 +4111,15 @@ addNodeToGroup (state_t* state, nodenum_t n)
 
 	group_add (state, n);
 
-	if (state->group_contains_value < contains_pulldown && get_nodes_pulldown (state, n))
-	{
+	if (state->group_contains_value < contains_pulldown && state->nodes_pulldown.get(n))
 		state->group_contains_value = contains_pulldown;
-	}
-	if (state->group_contains_value < contains_pullup && get_nodes_pullup (state, n))
-	{
-		state->group_contains_value = contains_pullup;
-	}
-	if (state->group_contains_value < contains_hi && get_nodes_value (state, n))
-	{
+	
+	if (state->group_contains_value < contains_pullup && state->nodes_pullup.get(n))
+			state->group_contains_value = contains_pullup;
+	
+	if (state->group_contains_value < contains_hi && state->nodes_value.get(n))	
 		state->group_contains_value = contains_hi;
-	}
+	
 
 	/* revisit all transistors that control this node */
 	count_t end = state->nodes_c1c2offset [n + 1];
@@ -4184,9 +4183,9 @@ recalcNode (state_t* state, nodenum_t node)
 	for (count_t i = 0; i < group_count (state); i++)
 	{
 		nodenum_t nn = group_get (state, i);
-		if (get_nodes_value (state, nn) != newv)
+		if (state->nodes_value.get(nn) != newv)
 		{
-			set_nodes_value (state, nn, newv);
+			state->nodes_value.set (nn, newv);
 			for (count_t t = 0; t < state->nodes_gatecount [nn]; t++)
 			{
 				transnum_t tn = state->nodes_gates [nn][t];
@@ -4329,7 +4328,7 @@ setupNodesAndTransistors ()
 	/* copy nodes into r/w data structure */
 	for (i = 0; i < state.nodes; i++)
 	{
-		set_nodes_pullup (&state, i, node_is_pullup.get (i));
+		state.nodes_pullup.set (i, node_is_pullup.get (i));
 		state.nodes_gatecount [i] = 0;
 	}
 	/* copy transistors into r/w data structure */
@@ -4415,15 +4414,14 @@ setupNodesAndTransistors ()
 		}
 	}
 
-#if 0 /* unnecessary - RESET will stabilize the network anyway */
+#if 1 /* unnecessary - RESET will stabilize the network anyway */
 	/* all nodes are down */
-	for (nodenum_t nn = 0; nn < state->nodes; nn++)
-	{
-		set_nodes_value (state, nn, 0);
-	}
+	for (nodenum_t nn = 0; nn < state.nodes; nn++)
+			state.nodes_value.set (nn, 0);
+	
 	/* all transistors are off */
-	for (transnum_t tn = 0; tn < state->transistors; tn++)
-		set_transistors_on (state, tn, NO);
+	for (transnum_t tn = 0; tn < state.transistors; tn++)
+		set_transistors_on (&state, tn, NO);
 #endif
 
 	return &state;
@@ -4477,8 +4475,8 @@ stabilizeChip (state_t* state)
 void
 setNode (state_t* state, nodenum_t nn, BOOL s)
 {
-	set_nodes_pullup (state, nn, s);
-	set_nodes_pulldown (state, nn, !s);
+	state->nodes_pullup.set (nn, s);
+	state->nodes_pulldown.set (nn, !s);
 	listout_add (state, nn);
 
 	recalcNodeList (state);
@@ -4487,7 +4485,7 @@ setNode (state_t* state, nodenum_t nn, BOOL s)
 BOOL
 isNodeHigh (state_t* state, nodenum_t nn)
 {
-	return get_nodes_value (state, nn);
+	return state->nodes_value.get (nn);
 }
 
 /************************************************************
