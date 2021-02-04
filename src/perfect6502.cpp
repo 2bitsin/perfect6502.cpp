@@ -241,7 +241,10 @@ namespace node_names
 	static inline constexpr auto y7 = 843;
 
 }
-constexpr bitmap<1725> netlist_6502_node_is_pullup
+
+static inline constexpr auto Number_of_nodes = 1725;
+
+constexpr bitmap<Number_of_nodes> netlist_6502_node_is_pullup
 {
 	1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 	
 	0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 
@@ -3851,9 +3854,9 @@ struct state_t
 	nodenum_t vcc;
 
 	/* everything that describes a node */
-	bitmap_t* nodes_pullup;
-	bitmap_t* nodes_pulldown;
-	bitmap_t* nodes_value;
+	bitmap<Number_of_nodes> nodes_pullup;
+	bitmap<Number_of_nodes> nodes_pulldown;
+	bitmap<Number_of_nodes> nodes_value;
 	nodenum_t** nodes_gates;
 	c1c2_t* nodes_c1c2s;
 	count_t* nodes_gatecount;
@@ -3935,37 +3938,37 @@ get_bitmap (bitmap_t* bitmap, int index)
 static inline void
 set_nodes_pullup (state_t* state, transnum_t t, BOOL s)
 {
-	set_bitmap (state->nodes_pullup, t, s);
+	state->nodes_pullup.set(t, s);
 }
 
 static inline BOOL
 get_nodes_pullup (state_t* state, transnum_t t)
 {
-	return get_bitmap (state->nodes_pullup, t);
+	return state->nodes_pullup.get(t);
 }
 
 static inline void
 set_nodes_pulldown (state_t* state, transnum_t t, BOOL s)
 {
-	set_bitmap (state->nodes_pulldown, t, s);
+	state->nodes_pulldown.set(t, s);
 }
 
 static inline BOOL
 get_nodes_pulldown (state_t* state, transnum_t t)
 {
-	return get_bitmap (state->nodes_pulldown, t);
+	return state->nodes_pulldown.get(t);
 }
 
 static inline void
 set_nodes_value (state_t* state, transnum_t t, BOOL s)
 {
-	set_bitmap (state->nodes_value, t, s);
+	state->nodes_value.set(t, s);
 }
 
 static inline BOOL
 get_nodes_value (state_t* state, transnum_t t)
 {
-	return get_bitmap (state->nodes_value, t);
+	return state->nodes_value.get(t);
 }
 
 /************************************************************
@@ -4285,9 +4288,10 @@ setupNodesAndTransistors ()
 	state.transistors = transistors;
 	state.vss = vss;
 	state.vcc = vcc;
-	state.nodes_pullup		= (bitmap_t*)calloc (WORDS_FOR_BITS (state.nodes), sizeof (*state.nodes_pullup));
-	state.nodes_pulldown	= (bitmap_t*)calloc (WORDS_FOR_BITS (state.nodes), sizeof (*state.nodes_pulldown));
-	state.nodes_value			= (bitmap_t*)calloc (WORDS_FOR_BITS (state.nodes), sizeof (*state.nodes_value));
+	state.nodes_pullup;
+	state.nodes_pulldown;
+	state.nodes_value;
+
 	state.nodes_gates			= (nodenum_t**)malloc (state.nodes * sizeof (*state.nodes_gates));
 
 	for (count_t i = 0; i < state.nodes; i++)
@@ -4428,13 +4432,9 @@ setupNodesAndTransistors ()
 void
 destroyNodesAndTransistors (state_t* state)
 {
-	free (state->nodes_pullup);
-	free (state->nodes_pulldown);
-	free (state->nodes_value);
+
 	for (count_t i = 0; i < state->nodes; i++)
-	{
 		free (state->nodes_gates [i]);
-	}
 	free (state->nodes_gates);
 	free (state->nodes_c1c2s);
 	free (state->nodes_gatecount);
@@ -4442,14 +4442,10 @@ destroyNodesAndTransistors (state_t* state)
 	free (state->nodes_dependants);
 	free (state->nodes_left_dependants);
 	for (count_t i = 0; i < state->nodes; i++)
-	{
 		free (state->nodes_dependant [i]);
-	}
 	free (state->nodes_dependant);
 	for (count_t i = 0; i < state->nodes; i++)
-	{
 		free (state->nodes_left_dependant [i]);
-	}
 	free (state->nodes_left_dependant);
 	free (state->transistors_gate);
 	free (state->transistors_c1);
@@ -4460,7 +4456,7 @@ destroyNodesAndTransistors (state_t* state)
 	free (state->listout_bitmap);
 	free (state->group);
 	free (state->groupbitmap);
-	free (state);
+	//free (state);
 }
 
 void
