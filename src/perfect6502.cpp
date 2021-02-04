@@ -3918,20 +3918,6 @@ listout_add (state_t& state, nodenum_t i)
 	}
 }
 
-/************************************************************
- *
- * Algorithms for Groups of Nodes
- *
- ************************************************************/
-
-/*
- * a group is a set of connected nodes, which consequently
- * share the same value
- *
- * we use an array and a count for O(1) insert and
- * iteration, and a redundant bitmap for O(1) lookup
- */
-
 static inline void
 group_clear (state_t* state)
 {
@@ -3946,11 +3932,6 @@ group_add (state_t* state, nodenum_t i)
 	state->groupbitmap.set(i, 1);
 }
 
-static inline BOOL
-group_contains (state_t* state, nodenum_t el)
-{
-	return state->groupbitmap.get(el);
-}
 
 /************************************************************
  *
@@ -3978,7 +3959,7 @@ addNodeToGroup (state_t* state, nodenum_t n)
 		return;
 	}
 
-	if (group_contains (state, n))
+	if (state->groupbitmap.get(n))
 		return;
 
 	group_add (state, n);
