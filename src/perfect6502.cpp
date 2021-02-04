@@ -3885,7 +3885,7 @@ struct state_t
 	nodenum_t nodes_dependants			[Number_of_nodes];
 	nodenum_t nodes_left_dependants	[Number_of_nodes];
 
-	c1c2_t* nodes_c1c2s;
+	c1c2_t*		nodes_c1c2s;
 	
 	group_contains_value_t group_contains_value;
 };
@@ -4199,7 +4199,9 @@ setupNodesAndTransistors ()
 
 	/* cross reference transistors in nodes data structures */
 	/* start by computing how many c1c2 entries should be created for each node */
-	count_t* c1c2count = (count_t*)calloc (state.nodes, sizeof (*c1c2count));
+	count_t c1c2count [Number_of_nodes];
+	std::memset(c1c2count, 0, sizeof(c1c2count));
+
 	count_t c1c2total = 0;
 	for (i = 0; i < state.transistors; i++)
 	{
@@ -4227,7 +4229,6 @@ setupNodesAndTransistors ()
 		state.nodes_c1c2s [state.nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2 (i, c2);
 		state.nodes_c1c2s [state.nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2 (i, c1);
 	}
-	free (c1c2count);
 
 	for (i = 0; i < state.nodes; i++)
 	{
