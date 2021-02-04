@@ -3530,32 +3530,7 @@ typedef uint16_t transnum_t;
 typedef uint16_t count_t;
 /* nodenum_t is declared in types.h, because it's API */
 
-/************************************************************
- *
- * Main State Data Structure
- *
- ************************************************************/
 
-#if 1 /* faster on 64 bit CPUs */
-typedef unsigned long long bitmap_t;
-#define BITMAP_SHIFT 6
-#define BITMAP_MASK 63
-#define ONE 1ULL
-#else
-typedef unsigned int bitmap_t;
-#define BITMAP_SHIFT 5
-#define BITMAP_MASK 31
-#define ONE 1U
-#endif
-
-/* list of nodes that need to be recalculated */
-/*
-typedef struct
-{
-	nodenum_t* list;
-	count_t count;
-} list_t;
-*/
 /* a transistor from the point of view of one of the connected nodes */
 typedef struct
 {
@@ -3590,12 +3565,12 @@ struct state_t
 	static inline constexpr nodenum_t vcc = node_names::vcc;
 
 	/* everything that describes a node */
-	bitmap<Number_of_nodes>					nodes_pullup;
-	bitmap<Number_of_nodes>					nodes_pulldown;
-	bitmap<Number_of_nodes>					nodes_value;
-	bitmap<Number_of_nodes>					listout_bitmap;
-	bitmap<Number_of_nodes>					groupbitmap;
-	bitmap<Number_of_transistors>		transistors_on;
+	bitmap<Number_of_nodes>	nodes_pullup;
+	bitmap<Number_of_nodes>	nodes_pulldown;
+	bitmap<Number_of_nodes>	nodes_value;
+	bitmap<Number_of_nodes>	listout_bitmap;
+	bitmap<Number_of_nodes>	groupbitmap;
+	bitmap<Number_of_transistors>	transistors_on;
 
 	array_list<nodenum_t, Number_of_nodes> listin;
 	array_list<nodenum_t, Number_of_nodes> listout;
@@ -3990,11 +3965,6 @@ setNode (state_t& state, nodenum_t nn, BOOL s)
 	recalcNodeList (state);
 }
 
-BOOL
-isNodeHigh (state_t& state, nodenum_t nn)
-{
-	return state.nodes_value.get (nn);
-}
 
 /************************************************************
  *
@@ -4009,7 +3979,7 @@ readNodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 	for (long long i = nodelist.size () - 1; i >= 0; i--)
 	{
 		result <<= 1;
-		result |= isNodeHigh (*state, *(nodelist.begin () + i));
+		result |= state->nodes_value.get (*(nodelist.begin () + i));
 	}
 	return result;
 }
@@ -4053,7 +4023,7 @@ BOOL
 readRW (state_t* state)
 {
 	using namespace node_names;
-	return isNodeHigh (*state, rw);
+	return state->nodes_value.get (rw);
 }
 
 uint8_t
@@ -4143,7 +4113,7 @@ static inline void
 handleMemory (state_t* state)
 {
 	using namespace node_names;
-	if (isNodeHigh (*state, rw))
+	if (state->nodes_value.get (rw))
 		writeDataBus (state, mRead (readAddressBus (state)));
 	else
 		mWrite (readAddressBus (state), readDataBus (state));
@@ -4161,7 +4131,7 @@ void
 step (state_t* state)
 {
 	using namespace node_names;
-	BOOL clk = isNodeHigh (*state, clk0);
+	BOOL clk =  state->nodes_value.get (clk0);
 
 	/* invert clock */
 	setNode (*state, clk0, !clk);
@@ -4219,10 +4189,10 @@ destroyChip (state_t& state)
 void
 chipStatus (state_t* state)
 {
-	BOOL clk = isNodeHigh (*state, clk0);
+	BOOL clk =  state->nodes_value.get (clk0);
 	uint16_t a = readAddressBus (state);
 	uint8_t d = readDataBus (state);
-	BOOL r_w = isNodeHigh (*state, rw);
+	BOOL r_w = state->nodes_value.get (rw);
 
 	printf ("halfcyc:%d phi0:%d AB:%04X D:%02X RnW:%d PC:%04X A:%02X X:%02X Y:%02X SP:%02X P:%02X IR:%02X",
 		cycle,
