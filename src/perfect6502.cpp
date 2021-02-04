@@ -3861,35 +3861,32 @@ struct state_t
 	static inline constexpr nodenum_t vcc = node_names::vcc;
 
 	/* everything that describes a node */
-	bitmap<Number_of_nodes> nodes_pullup;
-	bitmap<Number_of_nodes> nodes_pulldown;
-	bitmap<Number_of_nodes> nodes_value;
-	bitmap<Number_of_nodes> listout_bitmap;
-	bitmap<Number_of_nodes> groupbitmap;
-	bitmap<Number_of_transistors>  transistors_on;
+	bitmap<Number_of_nodes>					nodes_pullup;
+	bitmap<Number_of_nodes>					nodes_pulldown;
+	bitmap<Number_of_nodes>					nodes_value;
+	bitmap<Number_of_nodes>					listout_bitmap;
+	bitmap<Number_of_nodes>					groupbitmap;
+	bitmap<Number_of_transistors>		transistors_on;
+
 	array_list<nodenum_t, Number_of_nodes> listin;
 	array_list<nodenum_t, Number_of_nodes> listout;
 	array_list<nodenum_t, Number_of_nodes> group;
 
-	nodenum_t** nodes_gates;
-	//nodenum_t nodes_gates[Number_of_nodes][Number_of_nodes];
+	nodenum_t nodes_gates						[Number_of_nodes][Number_of_nodes];
+	nodenum_t nodes_dependant				[Number_of_nodes][Number_of_nodes];
+	nodenum_t nodes_left_dependant	[Number_of_nodes][Number_of_nodes];;
+
+	nodenum_t transistors_gate			[Number_of_transistors] ;
+	nodenum_t transistors_c1				[Number_of_transistors] ;
+	nodenum_t transistors_c2				[Number_of_transistors] ;
+
+	count_t		nodes_gatecount				[Number_of_nodes];
+	count_t		nodes_c1c2offset			[Number_of_nodes+1];
+	nodenum_t nodes_dependants			[Number_of_nodes];
+	nodenum_t nodes_left_dependants	[Number_of_nodes];
 
 	c1c2_t* nodes_c1c2s;
-	count_t* nodes_gatecount;
-	count_t* nodes_c1c2offset;
-	nodenum_t* nodes_dependants;
-	nodenum_t* nodes_left_dependants;
-	nodenum_t** nodes_dependant;
-	nodenum_t** nodes_left_dependant;
-
-	/* everything that describes a transistor */
-	nodenum_t* transistors_gate;
-	nodenum_t* transistors_c1;
-	nodenum_t* transistors_c2;
-
-
-	//nodenum_t* group;
-	//count_t groupcount;
+	
 	group_contains_value_t group_contains_value;
 };
 
@@ -4145,28 +4142,20 @@ setupNodesAndTransistors ()
 	state.listout.clear();
 	state.listout_bitmap.clear();
 
-	state.nodes_gates			= (nodenum_t**)malloc (state.nodes * sizeof (*state.nodes_gates));
+	std::memset(state.nodes_gates, 0, sizeof(state.nodes_gates));
+	std::memset(state.nodes_dependant, 0, sizeof(state.nodes_dependant));
+	std::memset(state.nodes_left_dependant, 0, sizeof(state.nodes_left_dependant));
 
-	for (count_t i = 0; i < state.nodes; i++)
-		state.nodes_gates [i] = (nodenum_t*)calloc (state.nodes, sizeof (**state.nodes_gates));
+	std::memset(state.transistors_gate, 0, sizeof (state.transistors_gate));
+	std::memset(state.transistors_c1  , 0, sizeof (state.transistors_c1  ));
+	std::memset(state.transistors_c2  , 0, sizeof (state.transistors_c2  ));
 
-	state.nodes_gatecount  = (count_t*)  calloc (state.nodes, sizeof (*state.nodes_gatecount));
-	state.nodes_c1c2offset = (count_t*)  calloc (state.nodes + 1, sizeof (*state.nodes_c1c2offset));
-	state.nodes_dependants = (nodenum_t*)calloc (state.nodes, sizeof (*state.nodes_dependants));
-	state.nodes_left_dependants = (nodenum_t*)calloc (state.nodes, sizeof (*state.nodes_left_dependants));
-	state.nodes_dependant = (nodenum_t**)malloc (state.nodes * sizeof (*state.nodes_dependant));
-
-	for (count_t i = 0; i < state.nodes; i++)	
-		state.nodes_dependant [i] = (nodenum_t*)calloc (state.nodes, sizeof (**state.nodes_dependant));
+	std::memset(state.nodes_dependants		 , 0, sizeof (state.nodes_dependants		 ));
+	std::memset(state.nodes_left_dependants, 0, sizeof (state.nodes_left_dependants));
+	std::memset(state.nodes_gatecount			 , 0, sizeof (state.nodes_gatecount			 ));
+	std::memset(state.nodes_c1c2offset		 , 0, sizeof (state.nodes_c1c2offset		 ));
 	
-	state.nodes_left_dependant = (nodenum_t**)malloc (state.nodes * sizeof (*state.nodes_left_dependant));
 
-	for (count_t i = 0; i < state.nodes; i++)
-		state.nodes_left_dependant [i] = (nodenum_t*)calloc (state.nodes, sizeof (**state.nodes_left_dependant));
-
-	state.transistors_gate = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_gate));
-	state.transistors_c1 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c1));
-	state.transistors_c2 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c2));
 
 
 
@@ -4277,23 +4266,8 @@ void
 destroyNodesAndTransistors (state_t* state)
 {
 
-	for (count_t i = 0; i < state->nodes; i++)
-		free (state->nodes_gates [i]);
-	free (state->nodes_gates);
 	free (state->nodes_c1c2s);
-	free (state->nodes_gatecount);
-	free (state->nodes_c1c2offset);
-	free (state->nodes_dependants);
-	free (state->nodes_left_dependants);
-	for (count_t i = 0; i < state->nodes; i++)
-		free (state->nodes_dependant [i]);
-	free (state->nodes_dependant);
-	for (count_t i = 0; i < state->nodes; i++)
-		free (state->nodes_left_dependant [i]);
-	free (state->nodes_left_dependant);
-	free (state->transistors_gate);
-	free (state->transistors_c1);
-	free (state->transistors_c2);
+
 	
 	
 	
