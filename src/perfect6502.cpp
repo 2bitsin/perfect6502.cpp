@@ -3864,6 +3864,11 @@ struct state_t
 	bitmap<Number_of_nodes> nodes_pullup;
 	bitmap<Number_of_nodes> nodes_pulldown;
 	bitmap<Number_of_nodes> nodes_value;
+	bitmap<Number_of_nodes> listout_bitmap;
+	bitmap<Number_of_transistors>  transistors_on;
+	array_list<nodenum_t, Number_of_nodes> listin;
+	array_list<nodenum_t, Number_of_nodes> listout;
+	bitmap<Number_of_nodes> groupbitmap;
 
 	nodenum_t** nodes_gates;
 	c1c2_t* nodes_c1c2s;
@@ -3879,14 +3884,9 @@ struct state_t
 	nodenum_t* transistors_c1;
 	nodenum_t* transistors_c2;
 
-	bitmap<Number_of_transistors>  transistors_on;
-	array_list<nodenum_t, Number_of_nodes> listin;
-	array_list<nodenum_t, Number_of_nodes> listout;
-	bitmap<Number_of_nodes> listout_bitmap;
 
 	nodenum_t* group;
 	count_t groupcount;
-	bitmap<Number_of_nodes> groupbitmap;
 	group_contains_value_t group_contains_value;
 };
 
