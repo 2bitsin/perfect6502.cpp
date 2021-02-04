@@ -3946,22 +3946,10 @@ group_add (state_t* state, nodenum_t i)
 	state->groupbitmap.set(i, 1);
 }
 
-static inline nodenum_t
-group_get (state_t* state, count_t n)
-{
-	return state->group [n];
-}
-
 static inline BOOL
 group_contains (state_t* state, nodenum_t el)
 {
 	return state->groupbitmap.get(el);
-}
-
-static inline count_t
-group_count (state_t* state)
-{
-	return state->group.size();
 }
 
 /************************************************************
@@ -4064,9 +4052,9 @@ recalcNode (state_t* state, nodenum_t node)
 	 * - collect all nodes behind toggled transistors
 	 *   for the next run
 	 */
-	for (count_t i = 0; i < group_count (state); i++)
+	for (count_t i = 0; i < state->group.size(); i++)
 	{
-		nodenum_t nn = group_get (state, i);
+		nodenum_t nn = state->group[i];
 		if (state->nodes_value.get(nn) != newv)
 		{
 			state->nodes_value.set (nn, newv);
