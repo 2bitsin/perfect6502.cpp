@@ -37,7 +37,8 @@
 
 namespace node_names
 {
-//	D1x1 = 827,
+	static inline constexpr auto D1x1 = 827;
+
 	static inline constexpr auto a0 = 737;
 	static inline constexpr auto a1 = 1234;
 	static inline constexpr auto a2 = 978;
@@ -62,38 +63,42 @@ namespace node_names
 	static inline constexpr auto ab13 = 349;
 	static inline constexpr auto ab14 = 672;
 	static inline constexpr auto ab15 = 195;
-//	adh0 = 407,
-//	adh1 = 52,
-//	adh2 = 1651,
-//	adh3 = 315,
-//	adh4 = 1160,
-//	adh5 = 483,
-//	adh6 = 13,
-//	adh7 = 1539,
-//	adl0 = 413,
-//	adl1 = 1282,
-//	adl2 = 1242,
-//	adl3 = 684,
-//	adl4 = 1437,
-//	adl5 = 1630,
-//	adl6 = 121,
-//	adl7 = 1299,
-//	alu0 = 394,
-//	alu1 = 697,
-//	alu2 = 276,
-//	alu3 = 495,
-//	alu4 = 1490,
-//	alu5 = 893,
-//	alu6 = 68,
-//	alu7 = 1123,
-//	cclk = 943,   // aka cp2
-//	clearIR = 1077,
+
+	static inline constexpr auto adh0 = 407;
+	static inline constexpr auto adh1 = 52;
+	static inline constexpr auto adh2 = 1651;
+	static inline constexpr auto adh3 = 315;
+	static inline constexpr auto adh4 = 1160;
+	static inline constexpr auto adh5 = 483;
+	static inline constexpr auto adh6 = 13;
+	static inline constexpr auto adh7 = 1539;
+	static inline constexpr auto adl0 = 413;
+	static inline constexpr auto adl1 = 1282;
+	static inline constexpr auto adl2 = 1242;
+	static inline constexpr auto adl3 = 684;
+	static inline constexpr auto adl4 = 1437;
+	static inline constexpr auto adl5 = 1630;
+	static inline constexpr auto adl6 = 121;
+	static inline constexpr auto adl7 = 1299;
+
+	static inline constexpr auto alu0 = 394;
+	static inline constexpr auto alu1 = 697;
+	static inline constexpr auto alu2 = 276;
+	static inline constexpr auto alu3 = 495;
+	static inline constexpr auto alu4 = 1490;
+	static inline constexpr auto alu5 = 893;
+	static inline constexpr auto alu6 = 68;
+	static inline constexpr auto alu7 = 1123;
+
+	static inline constexpr auto cclk = 943;   // aka cp2
+	static inline constexpr auto clearIR = 1077;
 	static inline constexpr auto clk0 = 1171;
-//	clk1out = 1163,
-//	clk2out = 421,
-//	clock1 = 156,
-//	clock2 = 1536,
-//	cp1 = 710,
+	static inline constexpr auto clk1out = 1163;
+	static inline constexpr auto clk2out = 421;
+	static inline constexpr auto clock1 = 156;
+	static inline constexpr auto clock2 = 1536;
+	static inline constexpr auto cp1 = 710;
+
 	static inline constexpr auto db0 = 1005;
 	static inline constexpr auto db1 = 82;
 	static inline constexpr auto db2 = 945;
@@ -102,51 +107,59 @@ namespace node_names
 	static inline constexpr auto db5 = 175;
 	static inline constexpr auto db6 = 1591;
 	static inline constexpr auto db7 = 1349;
-//	dor0 = 222,
-//	dor1 = 527,
-//	dor2 = 1288,
-//	dor3 = 823,
-//	dor4 = 873,
-//	dor5 = 1266,
-//	dor6 = 1418,
-//	dor7 = 158,
-//	fetch = 879,
-//	h1x1 = 1042 // drive status byte onto databus
-//	idb0 = 1108,
-//	idb1 = 991,
-//	idb2 = 1473,
-//	idb3 = 1302,
-//	idb4 = 892,
-//	idb5 = 1503,
-//	idb6 = 833,
-//	idb7 = 493,
-//	idl0 = 116,
-//	idl1 = 576,
-//	idl2 = 1485,
-//	idl3 = 1284,
-//	idl4 = 1516,
-//	idl5 = 498,
-//	idl6 = 1537,
-//	idl7 = 529,
+
+	static inline constexpr auto dor0 = 222;
+	static inline constexpr auto dor1 = 527;
+	static inline constexpr auto dor2 = 1288;
+	static inline constexpr auto dor3 = 823;
+	static inline constexpr auto dor4 = 873;
+	static inline constexpr auto dor5 = 1266;
+	static inline constexpr auto dor6 = 1418;
+	static inline constexpr auto dor7 = 158;
+
+	static inline constexpr auto fetch = 879;
+
+	static inline constexpr auto h1x1 = 1042; // drive status byte onto databus
+
+	static inline constexpr auto idb0 = 1108;
+	static inline constexpr auto idb1 = 991;
+	static inline constexpr auto idb2 = 1473;
+	static inline constexpr auto idb3 = 1302;
+	static inline constexpr auto idb4 = 892;
+	static inline constexpr auto idb5 = 1503;
+	static inline constexpr auto idb6 = 833;
+	static inline constexpr auto idb7 = 493;
+	static inline constexpr auto idl0 = 116;
+	static inline constexpr auto idl1 = 576;
+	static inline constexpr auto idl2 = 1485;
+	static inline constexpr auto idl3 = 1284;
+	static inline constexpr auto idl4 = 1516;
+	static inline constexpr auto idl5 = 498;
+	static inline constexpr auto idl6 = 1537;
+	static inline constexpr auto idl7 = 529;
+
 	static inline constexpr auto irq = 103;
 	static inline constexpr auto nmi = 1297;
-//	notRdy0 = 248,
+	static inline constexpr auto notRdy0 = 248;
+
 	static inline constexpr auto notir0 = 194;
 	static inline constexpr auto notir1 = 702;
 	static inline constexpr auto notir2 = 1182;
 	static inline constexpr auto notir3 = 1125;
 	static inline constexpr auto notir4 = 26;
-	static inline constexpr auto notir5 = 1394;  // OK
-	static inline constexpr auto notir6 = 895;  // OK
+	static inline constexpr auto notir5 = 1394;
+	static inline constexpr auto notir6 = 895;
 	static inline constexpr auto notir7 = 1320;
-//	nots0 = 418,
-//	nots1 = 1064,
-//	nots2 = 752,
-//	nots3 = 828,
-//	nots4 = 1603,
-//	nots5 = 601,
-//	nots6 = 1029,
-//	nots7 = 181,
+
+	static inline constexpr auto nots0 = 418;
+	static inline constexpr auto nots1 = 1064;
+	static inline constexpr auto nots2 = 752;
+	static inline constexpr auto nots3 = 828;
+	static inline constexpr auto nots4 = 1603;
+	static inline constexpr auto nots5 = 601;
+	static inline constexpr auto nots6 = 1029;
+	static inline constexpr auto nots7 = 181;
+
 	static inline constexpr auto p0 = 687;
 	static inline constexpr auto p1 = 1444;
 	static inline constexpr auto p2 = 1421;
@@ -155,6 +168,7 @@ namespace node_names
 	static inline constexpr auto p5 = 0;
 	static inline constexpr auto p6 = 77;
 	static inline constexpr auto p7 = 1370;
+
 	static inline constexpr auto pch0 = 1670;
 	static inline constexpr auto pch1 = 292;
 	static inline constexpr auto pch2 = 502;
@@ -171,17 +185,20 @@ namespace node_names
 	static inline constexpr auto pcl5 = 622;
 	static inline constexpr auto pcl6 = 377;
 	static inline constexpr auto pcl7 = 1611;
-//	pd0 = 758,
-//	pd1 = 361,
-//	pd2 = 955,
-//	pd3 = 894,
-//	pd4 = 369,
-//	pd5 = 829,
-//	pd6 = 1669,
-//	pd7 = 1690,
+
+	static inline constexpr auto pd0 = 758;
+	static inline constexpr auto pd1 = 361;
+	static inline constexpr auto pd2 = 955;
+	static inline constexpr auto pd3 = 894;
+	static inline constexpr auto pd4 = 369;
+	static inline constexpr auto pd5 = 829;
+	static inline constexpr auto pd6 = 1669;
+	static inline constexpr auto pd7 = 1690;
+
 	static inline constexpr auto rdy = 89;
 	static inline constexpr auto res = 159;
 	static inline constexpr auto rw = 1156;
+
 	static inline constexpr auto s0 = 1403;
 	static inline constexpr auto s1 = 183;
 	static inline constexpr auto s2 = 81;
@@ -190,20 +207,20 @@ namespace node_names
 	static inline constexpr auto s5 = 1098;
 	static inline constexpr auto s6 = 1212;
 	static inline constexpr auto s7 = 1435;
-//	sb0 = 54,
-//	sb1 = 1150,
-//	sb2 = 1287,
-//	sb3 = 1188,
-//	sb4 = 1405,
-//	sb5 = 166,
-//	sb6 = 1336,
-//	sb7 = 1001,
+	static inline constexpr auto sb0 = 54;
+	static inline constexpr auto sb1 = 1150;
+	static inline constexpr auto sb2 = 1287;
+	static inline constexpr auto sb3 = 1188;
+	static inline constexpr auto sb4 = 1405;
+	static inline constexpr auto sb5 = 166;
+	static inline constexpr auto sb6 = 1336;
+	static inline constexpr auto sb7 = 1001;
 	static inline constexpr auto so = 1672;
-//	sync_ = 539,
-//	t2 = 971,
-//	t3 = 1567,
-//	t4 = 690,
-//	t5 = 909,
+	static inline constexpr auto sync_ = 539;
+	static inline constexpr auto t2 = 971;
+	static inline constexpr auto t3 = 1567;
+	static inline constexpr auto t4 = 690;
+	static inline constexpr auto t5 = 909;
 	static inline constexpr auto vcc = 657;
 	static inline constexpr auto vss = 558;
 	static inline constexpr auto x0 = 1216;
@@ -225,18 +242,11 @@ namespace node_names
 
 }
 constexpr bitmap<1725> netlist_6502_node_is_pullup{
-	1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1,
-	1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0,
-	1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0,
-	0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1,
-	0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0,
-	0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0,
-	0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1,
-	1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0,
-	1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1,
-	1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1,
-	0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+	1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 	
+	0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 
+	1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 
+	1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1,
 	0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0,
 	1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1,
 	0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1,
@@ -4633,7 +4643,7 @@ readY (state_t* state)
 uint8_t
 readP (state_t* state)
 {
-	using namespace node_names;	
+	using namespace node_names;
 	return (uint8_t)readNodes (state, { p0, p1, p2, p3, p4, p5, p6, p7 });
 }
 
