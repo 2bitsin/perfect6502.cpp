@@ -3891,59 +3891,9 @@ struct state_t
 	group_contains_value_t group_contains_value;
 };
 
-/************************************************************
- *
- * Main Header Include
- *
- ************************************************************/
-
-
-/************************************************************
- *
- * Algorithms for Bitmaps
- *
- ************************************************************/
 
 #define WORDS_FOR_BITS(a) ((a + sizeof(bitmap_t) * 8 - 1) / (sizeof(bitmap_t) * 8))
 
-static inline void
-bitmap_clear (bitmap_t* bitmap, count_t count)
-{
-	memset (bitmap, 0, WORDS_FOR_BITS (count) * sizeof (bitmap_t));
-}
-
-static inline void
-set_bitmap (bitmap_t* bitmap, int index, BOOL state)
-{
-	if (state)
-		bitmap [index >> BITMAP_SHIFT] |= ONE << (index & BITMAP_MASK);
-	else
-		bitmap [index >> BITMAP_SHIFT] &= ~(ONE << (index & BITMAP_MASK));
-}
-
-static inline BOOL
-get_bitmap (bitmap_t* bitmap, int index)
-{
-	return (bitmap [index >> BITMAP_SHIFT] >> (index & BITMAP_MASK)) & 1;
-}
-
-/************************************************************
- *
- * Algorithms for Transistors
- *
- ************************************************************/
-
-//static inline void
-//set_transistors_on (state_t* state, transnum_t t, BOOL s)
-//{
-//	set_bitmap (state->transistors_on, t, s);
-//}
-//
-//static inline BOOL
-//get_transistors_on (state_t* state, transnum_t t)
-//{
-//	return get_bitmap (state->transistors_on, t);
-//}
 
 /************************************************************
  *
@@ -3957,19 +3907,16 @@ listin_get (state_t* state, count_t i)
 	return state->listin.list [i];
 }
 
-static inline count_t
-listin_count (state_t* state)
-{
-	return state->listin.count;
-}
 
-static inline void
-lists_switch (state_t* state)
-{
-	list_t tmp = state->listin;
-	state->listin = state->listout;
-	state->listout = tmp;
-}
+//static inline void
+//lists_switch (state_t* state)
+//{
+//	//list_t tmp = state->listin;
+//	//state->listin = state->listout;
+//	//state->listout = tmp;
+//
+//	
+//}
 
 static inline void
 listout_clear (state_t* state)
@@ -4170,9 +4117,8 @@ recalcNodeList (state_t* state)
  * the data storage of the primary list as the
  * secondary list
  */
-		lists_switch (state);
-
-		if (!listin_count (state))
+		std::swap(state->listin, state->listout);
+		if (!state->listin.count)
 			break;
 
 		listout_clear (state);
@@ -4184,7 +4130,7 @@ recalcNodeList (state_t* state)
 		 * all transistors controlled by this path, collecting
 		 * all nodes that changed because of it for the next run
 		 */
-		for (count_t i = 0; i < listin_count (state); i++)
+		for (count_t i = 0; i < state->listin.count; i++)
 		{
 			nodenum_t n = listin_get (state, i);
 			recalcNode (state, n);
@@ -4644,8 +4590,6 @@ initAndResetChip ()
 {
 	using namespace node_names;
 	/* set up data structures for efficient emulation */
-	nodenum_t nodes = netlist_6502_node_is_pullup.size ();  //sizeof(netlist_6502_node_is_pullup)/sizeof(*netlist_6502_node_is_pullup);
-	nodenum_t transistors = sizeof (netlist_6502_transdefs) / sizeof (*netlist_6502_transdefs);
 	state_t* state = setupNodesAndTransistors ();
 
 	setNode (state, res, 0);

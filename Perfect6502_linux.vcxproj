@@ -54,6 +54,7 @@
     <ClInclude Include="src\perfect6502.h" />
     <ClInclude Include="src\types.h" />
     <ClInclude Include="src\utils\bitmap.hpp" />
+    <ClInclude Include="src\utils\array_list.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\apple1basic.bin" />
