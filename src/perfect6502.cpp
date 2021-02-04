@@ -3859,6 +3859,7 @@ struct state_t
 	bitmap<Number_of_nodes> nodes_pullup;
 	bitmap<Number_of_nodes> nodes_pulldown;
 	bitmap<Number_of_nodes> nodes_value;
+
 	nodenum_t** nodes_gates;
 	c1c2_t* nodes_c1c2s;
 	count_t* nodes_gatecount;
@@ -3872,7 +3873,7 @@ struct state_t
 	nodenum_t* transistors_gate;
 	nodenum_t* transistors_c1;
 	nodenum_t* transistors_c2;
-	bitmap_t* transistors_on;
+	bitmap<Number_of_transistors>  transistors_on;
 
 	/* the nodes we are working with */
 	nodenum_t* list1;
@@ -3882,11 +3883,11 @@ struct state_t
 	nodenum_t* list2;
 	list_t listout;
 
-	bitmap_t* listout_bitmap;
+	bitmap<Number_of_nodes> listout_bitmap;
 
 	nodenum_t* group;
 	count_t groupcount;
-	bitmap_t* groupbitmap;
+	bitmap<Number_of_nodes> groupbitmap;
 	group_contains_value_t group_contains_value;
 };
 
@@ -3932,17 +3933,17 @@ get_bitmap (bitmap_t* bitmap, int index)
  *
  ************************************************************/
 
-static inline void
-set_transistors_on (state_t* state, transnum_t t, BOOL s)
-{
-	set_bitmap (state->transistors_on, t, s);
-}
-
-static inline BOOL
-get_transistors_on (state_t* state, transnum_t t)
-{
-	return get_bitmap (state->transistors_on, t);
-}
+//static inline void
+//set_transistors_on (state_t* state, transnum_t t, BOOL s)
+//{
+//	set_bitmap (state->transistors_on, t, s);
+//}
+//
+//static inline BOOL
+//get_transistors_on (state_t* state, transnum_t t)
+//{
+//	return get_bitmap (state->transistors_on, t);
+//}
 
 /************************************************************
  *
@@ -3974,16 +3975,16 @@ static inline void
 listout_clear (state_t* state)
 {
 	state->listout.count = 0;
-	bitmap_clear (state->listout_bitmap, state->nodes);
+	state->listout_bitmap.clear();
 }
 
 static inline void
 listout_add (state_t* state, nodenum_t i)
 {
-	if (!get_bitmap (state->listout_bitmap, i))
+	if (!state->listout_bitmap.get(i))
 	{
 		state->listout.list [state->listout.count++] = i;
-		set_bitmap (state->listout_bitmap, i, 1);
+		state->listout_bitmap.set(i, 1);
 	}
 }
 
@@ -4005,14 +4006,14 @@ static inline void
 group_clear (state_t* state)
 {
 	state->groupcount = 0;
-	bitmap_clear (state->groupbitmap, state->nodes);
+	state->groupbitmap.clear();
 }
 
 static inline void
 group_add (state_t* state, nodenum_t i)
 {
 	state->group [state->groupcount++] = i;
-	set_bitmap (state->groupbitmap, i, 1);
+	state->groupbitmap.set(i, 1);
 }
 
 static inline nodenum_t
@@ -4024,7 +4025,7 @@ group_get (state_t* state, count_t n)
 static inline BOOL
 group_contains (state_t* state, nodenum_t el)
 {
-	return get_bitmap (state->groupbitmap, el);
+	return state->groupbitmap.get(el);
 }
 
 static inline count_t
@@ -4080,7 +4081,7 @@ addNodeToGroup (state_t* state, nodenum_t n)
 	{
 		c1c2_t c = state->nodes_c1c2s [t];
 		/* if the transistor connects c1 and c2... */
-		if (get_transistors_on (state, c.transistor))
+		if (state->transistors_on.get (c.transistor))
 		{
 			addNodeToGroup (state, c.other_node);
 		}
@@ -4142,7 +4143,7 @@ recalcNode (state_t* state, nodenum_t node)
 			for (count_t t = 0; t < state->nodes_gatecount [nn]; t++)
 			{
 				transnum_t tn = state->nodes_gates [nn][t];
-				set_transistors_on (state, tn, newv);
+				state->transistors_on.set (tn, newv);
 			}
 
 			if (newv)
@@ -4236,9 +4237,10 @@ setupNodesAndTransistors ()
 	state.transistors = transistors;
 	state.vss = vss;
 	state.vcc = vcc;
-	state.nodes_pullup;
-	state.nodes_pulldown;
-	state.nodes_value;
+
+	state.nodes_pullup.clear();
+	state.nodes_pulldown.clear();
+	state.nodes_value.clear();
 
 	state.nodes_gates			= (nodenum_t**)malloc (state.nodes * sizeof (*state.nodes_gates));
 
@@ -4262,16 +4264,18 @@ setupNodesAndTransistors ()
 	state.transistors_gate = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_gate));
 	state.transistors_c1 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c1));
 	state.transistors_c2 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c2));
-	state.transistors_on = (bitmap_t*)calloc (WORDS_FOR_BITS (state.transistors), sizeof (*state.transistors_on));
+	state.transistors_on.clear();
 	state.list1 = (nodenum_t*)calloc (state.nodes, sizeof (*state.list1));
 	state.list2 = (nodenum_t*)calloc (state.nodes, sizeof (*state.list2));
-	state.listout_bitmap = (bitmap_t*)calloc (WORDS_FOR_BITS (state.nodes), sizeof (*state.listout_bitmap));
 	state.group = (nodenum_t*)malloc (state.nodes * sizeof (*state.group));
-	state.groupbitmap = (bitmap_t*)calloc (WORDS_FOR_BITS (state.nodes), sizeof (*state.groupbitmap));
+	state.groupbitmap.clear();
 	state.listin.list = state.list1;
 	state.listin.count = 0;
 	state.listout.list = state.list2;
 	state.listout.count = 0;
+	state.listout_bitmap.clear();
+
+
 
 	count_t i;
 	/* copy nodes into r/w data structure */
@@ -4370,7 +4374,7 @@ setupNodesAndTransistors ()
 	
 	/* all transistors are off */
 	for (transnum_t tn = 0; tn < state.transistors; tn++)
-		set_transistors_on (&state, tn, NO);
+		state.transistors_on.set (tn, NO);
 #endif
 
 	return &state;
@@ -4397,12 +4401,12 @@ destroyNodesAndTransistors (state_t* state)
 	free (state->transistors_gate);
 	free (state->transistors_c1);
 	free (state->transistors_c2);
-	free (state->transistors_on);
+	
 	free (state->list1);
 	free (state->list2);
-	free (state->listout_bitmap);
+	
 	free (state->group);
-	free (state->groupbitmap);
+	
 	//free (state);
 }
 
