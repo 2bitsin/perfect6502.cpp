@@ -3872,6 +3872,8 @@ struct state_t
 	array_list<nodenum_t, Number_of_nodes> group;
 
 	nodenum_t** nodes_gates;
+	//nodenum_t nodes_gates[Number_of_nodes][Number_of_nodes];
+
 	c1c2_t* nodes_c1c2s;
 	count_t* nodes_gatecount;
 	count_t* nodes_c1c2offset;
@@ -4126,19 +4128,22 @@ setupNodesAndTransistors ()
 	using namespace node_names;
 	auto& node_is_pullup = netlist_6502_node_is_pullup;
 	auto& transdefs = netlist_6502_transdefs;
-	constexpr auto nodes = netlist_6502_node_is_pullup.size ();
-	constexpr auto transistors = std::size (netlist_6502_transdefs);
 
 	/* allocate state */
 	state_t& state = G_6502_state;
 
-
-
-
-
 	state.nodes_pullup.clear();
 	state.nodes_pulldown.clear();
 	state.nodes_value.clear();
+
+	state.transistors_on.clear();
+
+	state.group.clear();
+	state.groupbitmap.clear();
+	
+	state.listin.clear();	
+	state.listout.clear();
+	state.listout_bitmap.clear();
 
 	state.nodes_gates			= (nodenum_t**)malloc (state.nodes * sizeof (*state.nodes_gates));
 
@@ -4162,15 +4167,6 @@ setupNodesAndTransistors ()
 	state.transistors_gate = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_gate));
 	state.transistors_c1 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c1));
 	state.transistors_c2 = (nodenum_t*)calloc (state.transistors, sizeof (*state.transistors_c2));
-	state.transistors_on.clear();
-
-	state.group.clear();
-	state.groupbitmap.clear();
-
-	
-	state.listin.clear();	
-	state.listout.clear();
-	state.listout_bitmap.clear();
 
 
 
