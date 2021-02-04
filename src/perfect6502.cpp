@@ -4272,10 +4272,15 @@ add_nodes_left_dependant(state_t *state, nodenum_t a, nodenum_t b)
 	state->nodes_left_dependant[a][state->nodes_left_dependants[a]++] = b;
 }
 
-template <typename _Bitmap>
 state_t *
-setupNodesAndTransistors(const netlist_transdefs *transdefs, const _Bitmap& node_is_pullup, nodenum_t nodes, nodenum_t transistors, nodenum_t vss, nodenum_t vcc)
+setupNodesAndTransistors()
 {
+
+	auto& node_is_pullup = netlist_6502_node_is_pullup;
+	auto& transdefs = netlist_6502_transdefs;
+	constexpr auto nodes = netlist_6502_node_is_pullup.size();
+	constexpr auto transistors = std::size(netlist_6502_transdefs);
+
 	/* allocate state */
 	state_t *state = (state_t *)malloc(sizeof(state_t));
 	state->nodes = nodes;
@@ -4663,12 +4668,7 @@ initAndResetChip()
 	/* set up data structures for efficient emulation */
 	nodenum_t nodes = netlist_6502_node_is_pullup.size();  //sizeof(netlist_6502_node_is_pullup)/sizeof(*netlist_6502_node_is_pullup);
 	nodenum_t transistors = sizeof(netlist_6502_transdefs)/sizeof(*netlist_6502_transdefs);
-	state_t *state = setupNodesAndTransistors(netlist_6502_transdefs,
-										   netlist_6502_node_is_pullup,
-										   nodes,
-										   transistors,
-										   vss,
-										   vcc);
+	state_t *state = setupNodesAndTransistors();
 
 	setNode(state, res, 0);
 	setNode(state, clk0, 1);
