@@ -3583,9 +3583,9 @@ enum group_contains_value_t
 
 struct state_t
 {
-	nodenum_t transistors = Number_of_transistors;
 
-	static inline constexpr auto nodes = Number_of_nodes;
+	static inline constexpr nodenum_t transistors = Number_of_transistors;
+	static inline constexpr nodenum_t nodes = Number_of_nodes;
 	static inline constexpr nodenum_t vss = node_names::vss;
 	static inline constexpr nodenum_t vcc = node_names::vcc;
 
@@ -3647,17 +3647,17 @@ listout_add (state_t& state, nodenum_t i)
 }
 
 static inline void
-group_clear (state_t* state)
+group_clear (state_t& state)
 {
-	state->group.clear ();
-	state->groupbitmap.clear ();
+	state.group.clear ();
+	state.groupbitmap.clear ();
 }
 
 static inline void
-group_add (state_t* state, nodenum_t i)
+group_add (state_t& state, nodenum_t i)
 {
-	state->group.push (i);
-	state->groupbitmap.set (i, 1);
+	state.group.push (i);
+	state.groupbitmap.set (i, 1);
 }
 
 
@@ -3668,47 +3668,47 @@ group_add (state_t* state, nodenum_t i)
  ************************************************************/
 
 static inline void
-addNodeToGroup (state_t* state, nodenum_t n)
+addNodeToGroup (state_t& state, nodenum_t n)
 {
 	/*
 	 * We need to stop at vss and vcc, otherwise we'll revisit other groups
 	 * with the same value - just because they all derive their value from
 	 * the fact that they are connected to vcc or vss.
 	 */
-	if (n == state->vss)
+	if (n == state.vss)
 	{
-		state->group_contains_value = contains_vss;
+		state.group_contains_value = contains_vss;
 		return;
 	}
-	if (n == state->vcc)
+	if (n == state.vcc)
 	{
-		if (state->group_contains_value != contains_vss)
-			state->group_contains_value = contains_vcc;
+		if (state.group_contains_value != contains_vss)
+			state.group_contains_value = contains_vcc;
 		return;
 	}
 
-	if (state->groupbitmap.get (n))
+	if (state.groupbitmap.get (n))
 		return;
 
 	group_add (state, n);
 
-	if (state->group_contains_value < contains_pulldown && state->nodes_pulldown.get (n))
-		state->group_contains_value = contains_pulldown;
+	if (state.group_contains_value < contains_pulldown && state.nodes_pulldown.get (n))
+		state.group_contains_value = contains_pulldown;
 
-	if (state->group_contains_value < contains_pullup && state->nodes_pullup.get (n))
-		state->group_contains_value = contains_pullup;
+	if (state.group_contains_value < contains_pullup && state.nodes_pullup.get (n))
+		state.group_contains_value = contains_pullup;
 
-	if (state->group_contains_value < contains_hi && state->nodes_value.get (n))
-		state->group_contains_value = contains_hi;
+	if (state.group_contains_value < contains_hi && state.nodes_value.get (n))
+		state.group_contains_value = contains_hi;
 
 
 	/* revisit all transistors that control this node */
-	count_t end = state->nodes_c1c2offset [n + 1];
-	for (count_t t = state->nodes_c1c2offset [n]; t < end; t++)
+	count_t end = state.nodes_c1c2offset [n + 1];
+	for (count_t t = state.nodes_c1c2offset [n]; t < end; t++)
 	{
-		c1c2_t c = state->nodes_c1c2s [t];
+		c1c2_t c = state.nodes_c1c2s [t];
 		/* if the transistor connects c1 and c2... */
-		if (state->transistors_on.get (c.transistor))
+		if (state.transistors_on.get (c.transistor))
 		{
 			addNodeToGroup (state, c.other_node);
 		}
@@ -3716,19 +3716,19 @@ addNodeToGroup (state_t* state, nodenum_t n)
 }
 
 static inline void
-addAllNodesToGroup (state_t* state, nodenum_t node)
+addAllNodesToGroup (state_t& state, nodenum_t node)
 {
 	group_clear (state);
 
-	state->group_contains_value = contains_nothing;
+	state.group_contains_value = contains_nothing;
 
 	addNodeToGroup (state, node);
 }
 
 static inline BOOL
-getGroupValue (state_t* state)
+getGroupValue (state_t& state)
 {
-	switch (state->group_contains_value)
+	switch (state.group_contains_value)
 	{
 	case contains_vcc:
 	case contains_pullup:
@@ -3744,7 +3744,7 @@ getGroupValue (state_t* state)
 }
 
 static inline void
-recalcNode (state_t* state, nodenum_t node)
+recalcNode (state_t& state, nodenum_t node)
 {
 	/*
 	 * get all nodes that are connected through
@@ -3761,34 +3761,34 @@ recalcNode (state_t* state, nodenum_t node)
 	 * - collect all nodes behind toggled transistors
 	 *   for the next run
 	 */
-	for (count_t i = 0; i < state->group.size (); i++)
+	for (count_t i = 0; i < state.group.size (); i++)
 	{
-		nodenum_t nn = state->group [i];
-		if (state->nodes_value.get (nn) != newv)
+		nodenum_t nn = state.group [i];
+		if (state.nodes_value.get (nn) != newv)
 		{
-			state->nodes_value.set (nn, newv);
-			for (count_t t = 0; t < state->nodes_gatecount [nn]; t++)
+			state.nodes_value.set (nn, newv);
+			for (count_t t = 0; t < state.nodes_gatecount [nn]; t++)
 			{
-				transnum_t tn = state->nodes_gates [nn][t];
-				state->transistors_on.set (tn, newv);
+				transnum_t tn = state.nodes_gates [nn][t];
+				state.transistors_on.set (tn, newv);
 			}
 
 			if (newv)
 			{
-				for (count_t g = 0; g < state->nodes_left_dependants [nn]; g++)
-					listout_add (*state, state->nodes_left_dependant [nn][g]);
+				for (count_t g = 0; g < state.nodes_left_dependants [nn]; g++)
+					listout_add (state, state.nodes_left_dependant [nn][g]);
 			}
 			else
 			{
-				for (count_t g = 0; g < state->nodes_dependants [nn]; g++)
-					listout_add (*state, state->nodes_dependant [nn][g]);
+				for (count_t g = 0; g < state.nodes_dependants [nn]; g++)
+					listout_add (state, state.nodes_dependant [nn][g]);
 			}
 		}
 	}
 }
 
 void
-recalcNodeList (state_t* state)
+recalcNodeList (state_t& state)
 {
 	for (int j = 0; j < 100; j++)
 	{	/* loop limiter */
@@ -3797,11 +3797,11 @@ recalcNodeList (state_t* state)
  * the data storage of the primary list as the
  * secondary list
  */
-		std::swap (state->listin, state->listout);
-		if (state->listin.empty ())
+		std::swap (state.listin, state.listout);
+		if (state.listin.empty ())
 			break;
 
-		listout_clear (*state);
+		listout_clear (state);
 
 		/*
 		 * for all nodes, follow their paths through
@@ -3810,13 +3810,13 @@ recalcNodeList (state_t* state)
 		 * all transistors controlled by this path, collecting
 		 * all nodes that changed because of it for the next run
 		 */
-		for (count_t i = 0; i < state->listin.size (); i++)
+		for (count_t i = 0; i < state.listin.size (); i++)
 		{
-			nodenum_t n = state->listin [i];
+			nodenum_t n = state.listin [i];
 			recalcNode (state, n);
 		}
 	}
-	listout_clear (*state);
+	listout_clear (state);
 }
 
 /************************************************************
@@ -3884,11 +3884,8 @@ setupNodesAndTransistors ()
 	std::memset (state.nodes_gatecount, 0, sizeof (state.nodes_gatecount));
 	std::memset (state.nodes_c1c2offset, 0, sizeof (state.nodes_c1c2offset));
 
-	for (auto i = 0; i < state.nodes; i++)
-	{
-		state.nodes_pullup.set (i, node_is_pullup.get (i));
-		state.nodes_gatecount [i] = 0;
-	}
+	state.nodes_pullup = node_is_pullup;
+
 
 	for (auto i = 0; i < state.transistors; i++)
 	{
@@ -3901,10 +3898,12 @@ setupNodesAndTransistors ()
 	std::memset (c1c2count, 0, sizeof (c1c2count));
 
 	count_t c1c2total = 0;
-	for (auto i = 0; i < state.transistors; i++)
+	for (nodenum_t i = 0; i < state.transistors; i++)
 	{
 		nodenum_t gate = state.transistors_gate [i];
-		state.nodes_gates [gate][state.nodes_gatecount [gate]++] = i;
+		count_t	count = state.nodes_gatecount [gate];
+		++state.nodes_gatecount [gate];
+		state.nodes_gates [gate][count] = i;
 		c1c2count [state.transistors_c1 [i]]++;
 		c1c2count [state.transistors_c2 [i]]++;
 		c1c2total += 2;
@@ -3920,7 +3919,7 @@ setupNodesAndTransistors ()
 	state.nodes_c1c2offset [i] = c1c2offset;
 	/* create and fill the nodes_c1c2s array according to these offsets */
 	state.nodes_c1c2s = (c1c2_t*)calloc (c1c2total, sizeof (*state.nodes_c1c2s));
-	memset (c1c2count, 0, state.nodes * sizeof (*c1c2count));
+	std::memset (c1c2count, 0, state.nodes * sizeof (*c1c2count));
 	for (i = 0; i < state.transistors; i++)
 	{
 		nodenum_t c1 = state.transistors_c1 [i];
@@ -3974,7 +3973,7 @@ stabilizeChip (state_t* state)
 	for (count_t i = 0; i < state->nodes; i++)
 		listout_add (*state, i);
 
-	recalcNodeList (state);
+	recalcNodeList (*state);
 }
 
 /************************************************************
@@ -3984,11 +3983,11 @@ stabilizeChip (state_t* state)
  ************************************************************/
 
 void
-setNode (state_t* state, nodenum_t nn, BOOL s)
+setNode (state_t& state, nodenum_t nn, BOOL s)
 {
-	state->nodes_pullup.set (nn, s);
-	state->nodes_pulldown.set (nn, !s);
-	listout_add (*state, nn);
+	state.nodes_pullup.set (nn, s);
+	state.nodes_pulldown.set (nn, !s);
+	listout_add (state, nn);
 
 	recalcNodeList (state);
 }
@@ -4006,18 +4005,6 @@ isNodeHigh (state_t* state, nodenum_t nn)
  ************************************************************/
 
 unsigned int
-readNodes (state_t* state, int count, const nodenum_t* nodelist)
-{
-	int result = 0;
-	for (int i = count - 1; i >= 0; i--)
-	{
-		result <<= 1;
-		result |= isNodeHigh (state, nodelist [i]);
-	}
-	return result;
-}
-
-unsigned int
 readNodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 {
 	int result = 0;
@@ -4031,14 +4018,7 @@ readNodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 
 
 void
-writeNodes (state_t* state, int count, const nodenum_t* nodelist, int v)
-{
-	for (int i = 0; i < 8; i++, v >>= 1)
-		setNode (state, nodelist [i], v & 1);
-}
-
-void
-writeNodes (state_t* state, int v, std::initializer_list<nodenum_t> nodelist)
+writeNodes (state_t& state, int v, std::initializer_list<nodenum_t> nodelist)
 {
 	for (auto i = 0u; i < nodelist.size (); i++, v >>= 1)
 		setNode (state, *(nodelist.begin () + i), v & 1);
@@ -4068,7 +4048,7 @@ void
 writeDataBus (state_t* state, uint8_t d)
 {
 	using namespace node_names;
-	writeNodes (state, d, { db0, db1, db2, db3, db4, db5, db6, db7 });
+	writeNodes (*state, d, { db0, db1, db2, db3, db4, db5, db6, db7 });
 }
 
 BOOL
@@ -4186,8 +4166,8 @@ step (state_t* state)
 	BOOL clk = isNodeHigh (state, clk0);
 
 	/* invert clock */
-	setNode (state, clk0, !clk);
-	recalcNodeList (state);
+	setNode (*state, clk0, !clk);
+	recalcNodeList (*state);
 
 	/* handle memory reads and writes */
 	if (!clk)
@@ -4204,12 +4184,12 @@ initAndResetChip ()
 	/* set up data structures for efficient emulation */
 	state_t* state = setupNodesAndTransistors ();
 
-	setNode (state, res, 0);
-	setNode (state, clk0, 1);
-	setNode (state, rdy, 1);
-	setNode (state, so, 0);
-	setNode (state, irq, 1);
-	setNode (state, nmi, 1);
+	setNode (*state, res, 0);
+	setNode (*state, clk0, 1);
+	setNode (*state, rdy, 1);
+	setNode (*state, so, 0);
+	setNode (*state, irq, 1);
+	setNode (*state, nmi, 1);
 
 	stabilizeChip (state);
 
@@ -4218,8 +4198,8 @@ initAndResetChip ()
 		step (state);
 
 	/* release RESET */
-	setNode (state, res, 1);
-	recalcNodeList (state);
+	setNode (*state, res, 1);
+	recalcNodeList (*state);
 
 	cycle = 0;
 
