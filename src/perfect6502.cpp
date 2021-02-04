@@ -3709,9 +3709,7 @@ addNodeToGroup (state_t& state, nodenum_t n)
 		c1c2_t c = state.nodes_c1c2s [t];
 		/* if the transistor connects c1 and c2... */
 		if (state.transistors_on.get (c.transistor))
-		{
 			addNodeToGroup (state, c.other_node);
-		}
 	}
 }
 
@@ -3993,9 +3991,9 @@ setNode (state_t& state, nodenum_t nn, BOOL s)
 }
 
 BOOL
-isNodeHigh (state_t* state, nodenum_t nn)
+isNodeHigh (state_t& state, nodenum_t nn)
 {
-	return state->nodes_value.get (nn);
+	return state.nodes_value.get (nn);
 }
 
 /************************************************************
@@ -4011,7 +4009,7 @@ readNodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 	for (long long i = nodelist.size () - 1; i >= 0; i--)
 	{
 		result <<= 1;
-		result |= isNodeHigh (state, *(nodelist.begin () + i));
+		result |= isNodeHigh (*state, *(nodelist.begin () + i));
 	}
 	return result;
 }
@@ -4055,7 +4053,7 @@ BOOL
 readRW (state_t* state)
 {
 	using namespace node_names;
-	return isNodeHigh (state, rw);
+	return isNodeHigh (*state, rw);
 }
 
 uint8_t
@@ -4145,7 +4143,7 @@ static inline void
 handleMemory (state_t* state)
 {
 	using namespace node_names;
-	if (isNodeHigh (state, rw))
+	if (isNodeHigh (*state, rw))
 		writeDataBus (state, mRead (readAddressBus (state)));
 	else
 		mWrite (readAddressBus (state), readDataBus (state));
@@ -4163,7 +4161,7 @@ void
 step (state_t* state)
 {
 	using namespace node_names;
-	BOOL clk = isNodeHigh (state, clk0);
+	BOOL clk = isNodeHigh (*state, clk0);
 
 	/* invert clock */
 	setNode (*state, clk0, !clk);
@@ -4221,10 +4219,10 @@ destroyChip (state_t& state)
 void
 chipStatus (state_t* state)
 {
-	BOOL clk = isNodeHigh (state, clk0);
+	BOOL clk = isNodeHigh (*state, clk0);
 	uint16_t a = readAddressBus (state);
 	uint8_t d = readDataBus (state);
-	BOOL r_w = isNodeHigh (state, rw);
+	BOOL r_w = isNodeHigh (*state, rw);
 
 	printf ("halfcyc:%d phi0:%d AB:%04X D:%02X RnW:%d PC:%04X A:%02X X:%02X Y:%02X SP:%02X P:%02X IR:%02X",
 		cycle,
