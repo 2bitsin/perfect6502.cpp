@@ -3628,7 +3628,7 @@ group_add (state_t& state, nodenum_t i)
  *
  * Node and Transistor Emulation
  *
- ************************************************************/
+	************************************************************/
 
 static inline void
 addNodeToGroup (state_t& state, nodenum_t n)
@@ -3655,15 +3655,37 @@ addNodeToGroup (state_t& state, nodenum_t n)
 
 	group_add (state, n);
 
-	if (state.group_contains_value < contains_pulldown && state.nodes_pulldown.get (n))
-		state.group_contains_value = contains_pulldown;
-
-	if (state.group_contains_value < contains_pullup && state.nodes_pullup.get (n))
-		state.group_contains_value = contains_pullup;
-
-	if (state.group_contains_value < contains_hi && state.nodes_value.get (n))
-		state.group_contains_value = contains_hi;
-
+	if (state.group_contains_value < contains_pulldown)
+	{
+		if (state.nodes_pulldown.get (n))
+			state.group_contains_value = contains_pulldown;
+		if (state.group_contains_value < contains_pullup)
+		{
+			if (state.nodes_pullup.get (n))
+				state.group_contains_value = contains_pullup;
+			if (state.group_contains_value < contains_hi)
+				if (state.nodes_value.get (n))
+					state.group_contains_value = contains_hi;
+		}
+	}
+		
+/*
+	switch(state.group_contains_value)
+	{
+	case contains_vss:
+	case contains_vcc:
+	case contains_pulldown:
+		if (state.nodes_pulldown.get (n))
+			state.group_contains_value = contains_pulldown;
+	case contains_pullup:
+		if (state.nodes_pullup.get (n))
+			state.group_contains_value = contains_pullup;
+	case contains_hi:
+	case contains_nothing:
+		if (state.nodes_value.get (n))
+			state.group_contains_value = contains_hi;
+	}
+*/
 
 	/* revisit all transistors that control this node */
 	count_t end = state.nodes_c1c2offset [n + 1];
