@@ -3590,7 +3590,7 @@ struct state_t
 	nodenum_t nodes_dependants [Number_of_nodes];
 	nodenum_t nodes_left_dependants [Number_of_nodes];
 
-	c1c2_t* nodes_c1c2s;
+	c1c2_t nodes_c1c2s[Number_of_transistors*2];
 
 	group_contains_value_t group_contains_value;
 };
@@ -3869,14 +3869,12 @@ setupNodesAndTransistors ()
 	count_t c1c2count [Number_of_nodes];
 	std::memset (c1c2count, 0, sizeof (c1c2count));
 
-	count_t c1c2total = 0;
+	
 	for (nodenum_t i = 0; i < state.transistors; i++)
 	{
-		nodenum_t gate = state.transistors_gate [i];
-		state.nodes_gates [gate].push(i);
+		state.nodes_gates [state.transistors_gate [i]].push(i);
 		c1c2count [state.transistors_c1 [i]]++;
-		c1c2count [state.transistors_c2 [i]]++;
-		c1c2total += 2;
+		c1c2count [state.transistors_c2 [i]]++;	
 	}
 	/* then sum the counts to find each node's offset into the c1c2 array */
 	count_t c1c2offset = 0;
@@ -3888,7 +3886,7 @@ setupNodesAndTransistors ()
 	}
 	state.nodes_c1c2offset [i] = c1c2offset;
 	/* create and fill the nodes_c1c2s array according to these offsets */
-	state.nodes_c1c2s = (c1c2_t*)calloc (c1c2total, sizeof (*state.nodes_c1c2s));
+	std::memset (state.nodes_c1c2s, 0, sizeof(state.nodes_c1c2s));
 	std::memset (c1c2count, 0, state.nodes * sizeof (*c1c2count));
 	for (i = 0; i < state.transistors; i++)
 	{
@@ -3931,11 +3929,6 @@ setupNodesAndTransistors ()
 	return &state;
 }
 
-void
-destroyNodesAndTransistors (state_t& state)
-{
-	free (state.nodes_c1c2s);
-}
 
 void
 stabilizeChip (state_t& state)
@@ -4169,12 +4162,6 @@ initAndResetChip ()
 	cycle = 0;
 
 	return state;
-}
-
-void
-destroyChip (state_t& state)
-{
-	destroyNodesAndTransistors (state);
 }
 
 /************************************************************
