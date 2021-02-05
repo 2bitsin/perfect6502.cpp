@@ -3595,9 +3595,6 @@ struct state_t
 };
 
 
-#define WORDS_FOR_BITS(a) ((a + sizeof(bitmap_t) * 8 - 1) / (sizeof(bitmap_t) * 8))
-
-
 /************************************************************
  *
  * Algorithms for Lists
