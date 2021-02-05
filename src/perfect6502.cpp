@@ -3593,7 +3593,6 @@ struct state_t
  ************************************************************/
 
 static inline void
-
 listout_clear (state_t& state)
 {
 	state.listout.clear ();
@@ -3603,11 +3602,10 @@ listout_clear (state_t& state)
 static inline void
 listout_add (state_t& state, nodenum_t i)
 {
-	if (!state.listout_bitmap.get (i))
-	{
-		state.listout.push (i);
-		state.listout_bitmap.set (i, 1);
-	}
+	if (state.listout_bitmap.get (i))
+		return;
+	state.listout.push (i);
+	state.listout_bitmap.set (i, 1);
 }
 
 static inline void
@@ -3737,13 +3735,13 @@ recalcNode (state_t& state, nodenum_t node)
 
 			if (newv)
 			{
-				for (count_t g = 0; g < state.nodes_left_dependant [nn].size(); g++)
-					listout_add (state, state.nodes_left_dependant [nn][g]);
+				for (auto&& node : state.nodes_left_dependant[nn])
+					listout_add (state, node);
 			}
 			else
 			{
-				for (count_t g = 0; g < state.nodes_dependant [nn].size(); g++)
-					listout_add (state, state.nodes_dependant [nn][g]);
+				for (auto&& node : state.nodes_dependant[nn])
+					listout_add (state, node);
 			}
 		}
 	}
