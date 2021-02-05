@@ -102,6 +102,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <StackReserveSize>67108864</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -120,6 +121,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <StackReserveSize>67108864</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -134,6 +136,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <StackReserveSize>67108864</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,26 +155,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <StackReserveSize>67108864</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\cbmbasic\cbmbasic.c" />
-    <ClCompile Include="src\cbmbasic\console.c" />
-    <ClCompile Include="src\cbmbasic\emu.c" />
-    <ClCompile Include="src\cbmbasic\plugin.c" />
-    <ClCompile Include="src\cbmbasic\readdir.c" />
-    <ClCompile Include="src\cbmbasic\runtime.c" />
-    <ClCompile Include="src\cbmbasic\runtime_init.c" />
+    <ClCompile Include="src\apple1basic\apple1basic.c" />
     <ClCompile Include="src\perfect6502.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\cbmbasic\console.h" />
-    <ClInclude Include="src\cbmbasic\glue.h" />
-    <ClInclude Include="src\cbmbasic\plugin.h" />
-    <ClInclude Include="src\cbmbasic\readdir.h" />
-    <ClInclude Include="src\cbmbasic\runtime.h" />
-    <ClInclude Include="src\cbmbasic\runtime_init.h" />
-    <ClInclude Include="src\cbmbasic\stat.h" />
     <ClInclude Include="src\perfect6502.h" />
     <ClInclude Include="src\types.h" />
     <ClInclude Include="src\utils\bitmap.hpp" />

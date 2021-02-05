@@ -82,6 +82,23 @@ struct array_list
 		std::swap(_size, rhs._size);
 	}
 
+	constexpr std::size_t count(const value_type& value) const
+	{
+		std::size_t _count { 0u };
+		for (auto&& item : _data)
+			if (item == value)
+				++_count;
+		return _count;
+	}
+
+	constexpr bool contains(const value_type& value) const
+	{
+		for (auto&& item : _data)
+			if (item == value)
+				return true;
+		return false;
+	}
+
 private:
 	std::size_t _size { 0u };
 	value_type _data [_Max_size] { };
