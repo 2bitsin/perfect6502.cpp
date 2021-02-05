@@ -3721,12 +3721,12 @@ recalcNode (state_t& state, nodenum_t node)
 	 * - collect all nodes behind toggled transistors
 	 *   for the next run
 	 */
-	for (count_t i = 0; i < state.group.size (); i++)
+	for (auto&& nn : state.group)
 	{
-		nodenum_t nn = state.group [i];
 		if (state.nodes_value.get (nn) != newv)
 		{
 			state.nodes_value.set (nn, newv);
+
 			for (auto&& tn: state.nodes_gates[nn])
 				state.transistors_on.set (tn, newv);
 
