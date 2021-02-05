@@ -3576,15 +3576,16 @@ struct state_t
 	array_list<nodenum_t, Number_of_nodes> listout;
 	array_list<nodenum_t, Number_of_nodes> group;
 
-	nodenum_t nodes_gates [Number_of_nodes][Number_of_nodes];
+	array_list<nodenum_t, Number_of_nodes> nodes_gates [Number_of_nodes];
+
 	nodenum_t nodes_dependant [Number_of_nodes][Number_of_nodes];
-	nodenum_t nodes_left_dependant [Number_of_nodes][Number_of_nodes];;
+	nodenum_t nodes_left_dependant [Number_of_nodes][Number_of_nodes];
 
 	nodenum_t transistors_gate [Number_of_transistors];
 	nodenum_t transistors_c1 [Number_of_transistors];
 	nodenum_t transistors_c2 [Number_of_transistors];
 
-	count_t		nodes_gatecount [Number_of_nodes];
+	//count_t		nodes_gatecount [Number_of_nodes];
 	count_t		nodes_c1c2offset [Number_of_nodes + 1];
 	nodenum_t nodes_dependants [Number_of_nodes];
 	nodenum_t nodes_left_dependants [Number_of_nodes];
@@ -3737,7 +3738,7 @@ recalcNode (state_t& state, nodenum_t node)
 		if (state.nodes_value.get (nn) != newv)
 		{
 			state.nodes_value.set (nn, newv);
-			for (count_t t = 0; t < state.nodes_gatecount [nn]; t++)
+			for (count_t t = 0; t < state.nodes_gates [nn].size(); t++)
 			{
 				transnum_t tn = state.nodes_gates [nn][t];
 				state.transistors_on.set (tn, newv);
@@ -3841,7 +3842,9 @@ setupNodesAndTransistors ()
 	state.listout.clear ();
 	state.listout_bitmap.clear ();
 
-	std::memset (state.nodes_gates, 0, sizeof (state.nodes_gates));
+	for(auto& list: state.nodes_gates)
+		list.clear();
+
 	std::memset (state.nodes_dependant, 0, sizeof (state.nodes_dependant));
 	std::memset (state.nodes_left_dependant, 0, sizeof (state.nodes_left_dependant));
 
@@ -3851,7 +3854,6 @@ setupNodesAndTransistors ()
 
 	std::memset (state.nodes_dependants, 0, sizeof (state.nodes_dependants));
 	std::memset (state.nodes_left_dependants, 0, sizeof (state.nodes_left_dependants));
-	std::memset (state.nodes_gatecount, 0, sizeof (state.nodes_gatecount));
 	std::memset (state.nodes_c1c2offset, 0, sizeof (state.nodes_c1c2offset));
 
 	state.nodes_pullup = node_is_pullup;
@@ -3871,9 +3873,7 @@ setupNodesAndTransistors ()
 	for (nodenum_t i = 0; i < state.transistors; i++)
 	{
 		nodenum_t gate = state.transistors_gate [i];
-		count_t	count = state.nodes_gatecount [gate];
-		++state.nodes_gatecount [gate];
-		state.nodes_gates [gate][count] = i;
+		state.nodes_gates [gate].push(i);
 		c1c2count [state.transistors_c1 [i]]++;
 		c1c2count [state.transistors_c2 [i]]++;
 		c1c2total += 2;
@@ -3902,7 +3902,7 @@ setupNodesAndTransistors ()
 	{
 		state.nodes_dependants [i] = 0;
 		state.nodes_left_dependants [i] = 0;
-		for (count_t g = 0; g < state.nodes_gatecount [i]; g++)
+		for (count_t g = 0; g < state.nodes_gates [i].size(); g++)
 		{
 			transnum_t t = state.nodes_gates [i][g];
 			nodenum_t c1 = state.transistors_c1 [t];
