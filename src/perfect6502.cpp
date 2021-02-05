@@ -3723,24 +3723,20 @@ recalcNode (state_t& state, nodenum_t node)
 	 */
 	for (auto&& nn : state.group)
 	{
-		if (state.nodes_value.get (nn) != newv)
-		{
-			state.nodes_value.set (nn, newv);
+		if (state.nodes_value.get (nn) == newv)
+			continue;
+		
+		state.nodes_value.set (nn, newv);
 
-			for (auto&& tn: state.nodes_gates[nn])
-				state.transistors_on.set (tn, newv);
+		for (auto&& tn: state.nodes_gates[nn])
+			state.transistors_on.set (tn, newv);
 
-			if (newv)
-			{
-				for (auto&& node : state.nodes_left_dependant[nn])
-					listout_add (state, node);
-			}
-			else
-			{
-				for (auto&& node : state.nodes_dependant[nn])
-					listout_add (state, node);
-			}
-		}
+		if (newv)
+			for (auto&& node : state.nodes_left_dependant[nn])
+				listout_add (state, node);
+		else
+			for (auto&& node : state.nodes_dependant[nn])
+				listout_add (state, node);		
 	}
 }
 
