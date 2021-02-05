@@ -3773,10 +3773,7 @@ recalcNodeList (state_t& state)
 		 * all nodes that changed because of it for the next run
 		 */
 		for (count_t i = 0; i < state.listin.size (); i++)
-		{
-			nodenum_t n = state.listin [i];
-			recalcNode (state, n);
-		}
+			recalcNode (state, state.listin [i]);
 	}
 	listout_clear (state);
 }
@@ -3798,10 +3795,8 @@ add_nodes_dependant (state_t& state, nodenum_t a, nodenum_t b)
 static inline void
 add_nodes_left_dependant (state_t& state, nodenum_t a, nodenum_t b)
 {
-	for (count_t g = 0; g < state.nodes_left_dependant [a].size(); g++)
-		if (state.nodes_left_dependant [a][g] == b)
-			return;
-
+	if (state.nodes_left_dependant [a].contains(b))
+		return;
 	state.nodes_left_dependant [a].push(b);
 }
 
