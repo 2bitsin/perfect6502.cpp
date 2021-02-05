@@ -3566,8 +3566,9 @@ struct state_t
 	bitmap<Number_of_nodes>	groupbitmap;
 	bitmap<Number_of_transistors>	transistors_on;
 
-	array_list<nodenum_t, Number_of_nodes> listin;
-	array_list<nodenum_t, Number_of_nodes> listout;
+	int listin, listout;
+	array_list<nodenum_t, Number_of_nodes> list [2];
+
 	array_list<nodenum_t, Number_of_nodes> group;
 
 	array_list<nodenum_t, Number_of_nodes> nodes_gates [Number_of_nodes];
@@ -3595,7 +3596,7 @@ struct state_t
 static inline void
 listout_clear (state_t& state)
 {
-	state.listout.clear ();
+	state.list[state.listout].clear ();
 	state.listout_bitmap.clear ();
 }
 
@@ -3604,7 +3605,7 @@ listout_add (state_t& state, nodenum_t i)
 {
 	if (state.listout_bitmap.get (i))
 		return;
-	state.listout.push (i);
+	state.list[state.listout].push (i);
 	state.listout_bitmap.set (i, 1);
 }
 
@@ -3751,7 +3752,7 @@ recalcNodeList (state_t& state)
  * secondary list
  */
 		std::swap (state.listin, state.listout);
-		if (state.listin.empty ())
+		if (state.list[state.listin].empty ())
 			break;
 
 		listout_clear (state);
@@ -3763,8 +3764,8 @@ recalcNodeList (state_t& state)
 		 * all transistors controlled by this path, collecting
 		 * all nodes that changed because of it for the next run
 		 */
-		for (count_t i = 0; i < state.listin.size (); i++)
-			recalcNode (state, state.listin [i]);
+		for (auto&& node : state.list[state.listin])
+			recalcNode (state, node);
 	}
 	listout_clear (state);
 }
@@ -3813,8 +3814,10 @@ setupNodesAndTransistors ()
 	state.group.clear ();
 	state.groupbitmap.clear ();
 
-	state.listin.clear ();
-	state.listout.clear ();
+	state.listin = 0;
+	state.listout = 1;
+	state.list[0].clear ();
+	state.list[1].clear ();
 	state.listout_bitmap.clear ();
 
 	for(auto& list: state.nodes_gates)
