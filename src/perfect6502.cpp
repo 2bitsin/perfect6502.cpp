@@ -3686,7 +3686,7 @@ addAllNodesToGroup (state_t& state, nodenum_t node)
 	addNodeToGroup (state, node);
 }
 
-static inline int
+static inline bool
 getGroupValue (state_t& state)
 {
 	switch (state.group_contains_value)
@@ -3694,13 +3694,12 @@ getGroupValue (state_t& state)
 	case contains_vcc:
 	case contains_pullup:
 	case contains_hi:
-		return 1;
+		return true;
 	case contains_vss:
 	case contains_pulldown:
 	case contains_nothing:
-		return 0;
 	default:
-		throw state;
+		return false;
 	}
 }
 
@@ -3769,29 +3768,6 @@ recalcNodeList (state_t& state)
 	}
 	listout_clear (state);
 }
-
-/************************************************************
- *
- * Initialization
- *
- ************************************************************/
-
-static inline void
-add_nodes_dependant (state_t& state, nodenum_t a, nodenum_t b)
-{
-	if (state.nodes_dependant [a].contains(b))
-		return;
-	state.nodes_dependant [a].push (b);
-}
-
-static inline void
-add_nodes_left_dependant (state_t& state, nodenum_t a, nodenum_t b)
-{
-	if (state.nodes_left_dependant [a].contains(b))
-		return;
-	state.nodes_left_dependant [a].push(b);
-}
-
 
 state_t G_6502_state;
 
@@ -3873,22 +3849,29 @@ setupNodesAndTransistors ()
 		state.nodes_c1c2s [state.nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2_t { i, c1 };
 	}
 
+	for(auto&& list: state.nodes_dependant)
+		list.clear();
+	for(auto&& list: state.nodes_left_dependant)
+		list.clear();
+
 	for (i = 0; i < state.nodes; i++)
 	{
-		state.nodes_dependant [i].clear();
-		state.nodes_left_dependant [i].clear();
 		for (auto&& t : state.nodes_gates [i])
 		{			
 			nodenum_t c1 = state.transistors_c1 [t];
 			nodenum_t c2 = state.transistors_c2 [t];
 
-			if (c1 != vss && c1 != vcc) add_nodes_dependant (state, i, c1);
-			if (c2 != vss && c2 != vcc) add_nodes_dependant (state, i, c2);
+			if (c1 != vss && c1 != vcc) 				
+				state.nodes_dependant [i].push_unique (c1);
 
-			if (c1 != vss && c1 != vcc)
-				add_nodes_left_dependant (state, i, c1);
+			if (c2 != vss && c2 != vcc) 
+				state.nodes_dependant [i].push_unique (c2);
+
+			if (c1 != vss && c1 != vcc)			
+				state.nodes_left_dependant [i].push_unique(c1);
 			else
-				add_nodes_left_dependant (state, i, c2);
+				state.nodes_left_dependant [i].push_unique(c2);
+				
 		}
 	}
 

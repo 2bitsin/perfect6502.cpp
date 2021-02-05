@@ -48,6 +48,15 @@ struct array_list
 		_data[_size++] = std::move(v);				
 	}
 
+	constexpr void push_unique(value_type v) 
+	{
+		assert(_size < capacity());
+		if (contains(v))
+			return;
+		_data[_size++] = std::move(v);				
+	}
+
+
 	constexpr void pop()
 	{
 		assert(_size > 0);
@@ -85,16 +94,16 @@ struct array_list
 	constexpr std::size_t count(const value_type& value) const
 	{
 		std::size_t _count { 0u };
-		for (std::size_t i = 0u; i < size(); ++i)
-			if (_data [i] == value)
+		for (auto&& curr : *this)
+			if (curr == value)
 				++_count;
 		return _count;
 	}
 
 	constexpr bool contains(const value_type& value) const
 	{
-		for (std::size_t i = 0u; i < size(); ++i)
-			if (_data [i] == value)
+		for (auto&& curr : *this)
+			if (curr == value)
 				return true;
 		return false;
 	}
