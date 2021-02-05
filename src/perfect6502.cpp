@@ -3571,14 +3571,8 @@ struct state_t
 	array_list<nodenum_t, Number_of_nodes> group;
 
 	array_list<nodenum_t, Number_of_nodes> nodes_gates [Number_of_nodes];
-
-	//nodenum_t nodes_dependant [Number_of_nodes][Number_of_nodes];
-	//nodenum_t nodes_dependants [Number_of_nodes];
-
 	array_list<nodenum_t, Number_of_nodes> nodes_dependant [Number_of_nodes];
-
-	nodenum_t nodes_left_dependant [Number_of_nodes][Number_of_nodes];
-	nodenum_t nodes_left_dependants [Number_of_nodes];
+	array_list<nodenum_t, Number_of_nodes> nodes_left_dependant [Number_of_nodes];
 
 	nodenum_t transistors_gate [Number_of_transistors];
 	nodenum_t transistors_c1 [Number_of_transistors];
@@ -3743,7 +3737,7 @@ recalcNode (state_t& state, nodenum_t node)
 
 			if (newv)
 			{
-				for (count_t g = 0; g < state.nodes_left_dependants [nn]; g++)
+				for (count_t g = 0; g < state.nodes_left_dependant [nn].size(); g++)
 					listout_add (state, state.nodes_left_dependant [nn][g]);
 			}
 			else
@@ -3796,21 +3790,19 @@ recalcNodeList (state_t& state)
 static inline void
 add_nodes_dependant (state_t& state, nodenum_t a, nodenum_t b)
 {
-	for (count_t g = 0; g < state.nodes_dependant [a].size(); g++)
-		if (state.nodes_dependant [a][g] == b)
-			return;
-
+	if (state.nodes_dependant [a].contains(b))
+		return;
 	state.nodes_dependant [a].push (b);
 }
 
 static inline void
 add_nodes_left_dependant (state_t& state, nodenum_t a, nodenum_t b)
 {
-	for (count_t g = 0; g < state.nodes_left_dependants [a]; g++)
+	for (count_t g = 0; g < state.nodes_left_dependant [a].size(); g++)
 		if (state.nodes_left_dependant [a][g] == b)
 			return;
 
-	state.nodes_left_dependant [a][state.nodes_left_dependants [a]++] = b;
+	state.nodes_left_dependant [a].push(b);
 }
 
 
@@ -3843,19 +3835,15 @@ setupNodesAndTransistors ()
 		list.clear();
 	for(auto& list: state.nodes_dependant)
 		list.clear();
+	for(auto& list: state.nodes_left_dependant)
+		list.clear();
 
-	
-	std::memset (state.nodes_left_dependant, 0, sizeof (state.nodes_left_dependant));
-	std::memset (state.nodes_left_dependants, 0, sizeof (state.nodes_left_dependants));
-
-	std::memset (state.transistors_gate, 0, sizeof (state.transistors_gate));
-	std::memset (state.transistors_c1, 0, sizeof (state.transistors_c1));
-	std::memset (state.transistors_c2, 0, sizeof (state.transistors_c2));
-	
-	std::memset (state.nodes_c1c2offset, 0, sizeof (state.nodes_c1c2offset));
+	std::memset (state.transistors_gate,	0, sizeof (state.transistors_gate	));
+	std::memset (state.transistors_c1,		0, sizeof (state.transistors_c1		));
+	std::memset (state.transistors_c2,		0, sizeof (state.transistors_c2		));	
+	std::memset (state.nodes_c1c2offset,	0, sizeof (state.nodes_c1c2offset	));
 
 	state.nodes_pullup = node_is_pullup;
-
 
 	for (auto i = 0; i < state.transistors; i++)
 	{
@@ -3899,7 +3887,7 @@ setupNodesAndTransistors ()
 	for (i = 0; i < state.nodes; i++)
 	{
 		state.nodes_dependant [i].clear();
-		state.nodes_left_dependants [i] = 0;
+		state.nodes_left_dependant [i].clear();
 		for (count_t g = 0; g < state.nodes_gates [i].size(); g++)
 		{
 			transnum_t t = state.nodes_gates [i][g];
