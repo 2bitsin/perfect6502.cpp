@@ -99,6 +99,32 @@ struct array_list
 		return false;
 	}
 
+	constexpr auto* begin() 
+	{
+		return &_data[0];
+	}
+	constexpr auto* begin() const 
+	{
+		return &_data[0];
+	}
+	constexpr auto* cbegin() const 
+	{
+		return &_data[0];
+	}
+
+	constexpr auto* end() 
+	{
+		return &_data[size()];
+	}
+	constexpr auto* end() const 
+	{
+		return &_data[size()];
+	}
+	constexpr auto* cend() const 
+	{
+		return &_data[size()];
+	}
+
 private:
 	std::size_t _size { 0u };
 	value_type _data [_Max_size] { };
