@@ -3877,9 +3877,8 @@ setupNodesAndTransistors ()
 	{
 		state.nodes_dependant [i].clear();
 		state.nodes_left_dependant [i].clear();
-		for (count_t g = 0; g < state.nodes_gates [i].size(); g++)
-		{
-			transnum_t t = state.nodes_gates [i][g];
+		for (auto&& t : state.nodes_gates [i])
+		{			
 			nodenum_t c1 = state.transistors_c1 [t];
 			if (c1 != vss && c1 != vcc)
 				add_nodes_dependant (state, i, c1);
