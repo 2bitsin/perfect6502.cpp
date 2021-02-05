@@ -3597,6 +3597,7 @@ struct state_t
  ************************************************************/
 
 static inline void
+
 listout_clear (state_t& state)
 {
 	state.listout.clear ();
@@ -3880,8 +3881,10 @@ setupNodesAndTransistors ()
 	}
 	state.nodes_c1c2offset [i] = c1c2offset;
 	/* create and fill the nodes_c1c2s array according to these offsets */
+
 	std::memset (state.nodes_c1c2s, 0, sizeof(state.nodes_c1c2s));
-	std::memset (c1c2count, 0, state.nodes * sizeof (*c1c2count));
+	std::memset (c1c2count, 0, sizeof (c1c2count));
+
 	for (i = 0; i < state.transistors; i++)
 	{
 		nodenum_t c1 = state.transistors_c1 [i];
@@ -4129,7 +4132,7 @@ step (state_t* state)
 }
 
 using namespace node_names;
-state_t*
+struct state_t*
 initAndResetChip ()
 {
 	using namespace node_names;
