@@ -3856,21 +3856,21 @@ setupNodesAndTransistors ()
 
 	for (i = 0; i < state.nodes; i++)
 	{
-		for (auto&& t : state.nodes_gates [i])
+		for (auto&& transistor : state.nodes_gates [i])
 		{			
-			nodenum_t c1 = state.transistors_c1 [t];
-			nodenum_t c2 = state.transistors_c2 [t];
+			const auto c1 = state.transistors_c1 [transistor];
+			const auto c2 = state.transistors_c2 [transistor];
 
-			if (c1 != vss && c1 != vcc) 				
+			const auto cond1 = c1 != vss && c1 != vcc;
+			const auto cond2 = c2 != vss && c2 != vcc;
+
+			if (cond1) 				
 				state.nodes_dependant [i].push_unique (c1);
 
-			if (c2 != vss && c2 != vcc) 
+			if (cond2) 
 				state.nodes_dependant [i].push_unique (c2);
 
-			if (c1 != vss && c1 != vcc)			
-				state.nodes_left_dependant [i].push_unique(c1);
-			else
-				state.nodes_left_dependant [i].push_unique(c2);
+			state.nodes_left_dependant [i].push_unique(cond1 ? c1 : c2);
 				
 		}
 	}
