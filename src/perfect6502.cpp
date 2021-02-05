@@ -3538,12 +3538,6 @@ typedef struct
 	nodenum_t other_node;
 } c1c2_t;
 
-static inline c1c2_t
-c1c2 (transnum_t tn, nodenum_t n)
-{
-	c1c2_t c = { tn, n };
-	return c;
-}
 
 enum group_contains_value_t
 {
@@ -3892,8 +3886,8 @@ setupNodesAndTransistors ()
 	{
 		nodenum_t c1 = state.transistors_c1 [i];
 		nodenum_t c2 = state.transistors_c2 [i];
-		state.nodes_c1c2s [state.nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2 (i, c2);
-		state.nodes_c1c2s [state.nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2 (i, c1);
+		state.nodes_c1c2s [state.nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2_t { i, c2 };
+		state.nodes_c1c2s [state.nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2_t { i, c1 };
 	}
 
 	for (i = 0; i < state.nodes; i++)
