@@ -3727,9 +3727,10 @@ recalcNode (state_t& state, nodenum_t node)
 		if (state.nodes_value.get (nn) != newv)
 		{
 			state.nodes_value.set (nn, newv);
-			for (count_t t = 0; t < state.nodes_gates [nn].size(); t++)
+			//for (count_t t = 0; t < state.nodes_gates [nn].size(); t++)
+			for (auto&& tn: state.nodes_gates[nn])
 			{
-				transnum_t tn = state.nodes_gates [nn][t];
+				//transnum_t tn = state.nodes_gates [nn][t];
 				state.transistors_on.set (tn, newv);
 			}
 
