@@ -3696,7 +3696,7 @@ addAllNodesToGroup (state_t& state, nodenum_t node)
 	addNodeToGroup (state, node);
 }
 
-static inline BOOL
+static inline int
 getGroupValue (state_t& state)
 {
 	switch (state.group_contains_value)
@@ -3704,11 +3704,11 @@ getGroupValue (state_t& state)
 	case contains_vcc:
 	case contains_pullup:
 	case contains_hi:
-		return YES;
+		return 1;
 	case contains_vss:
 	case contains_pulldown:
 	case contains_nothing:
-		return NO;
+		return 0;
 	default:
 		throw state;
 	}
@@ -3724,7 +3724,7 @@ recalcNode (state_t& state, nodenum_t node)
 	addAllNodesToGroup (state, node);
 
 	/* get the state of the group */
-	BOOL newv = getGroupValue (state);
+	auto newv = getGroupValue (state);
 
 	/*
 	 * - set all nodes to the group state
@@ -3923,7 +3923,7 @@ setupNodesAndTransistors ()
 
 /* all transistors are off */
 	for (transnum_t tn = 0; tn < state.transistors; tn++)
-		state.transistors_on.set (tn, NO);
+		state.transistors_on.set (tn, 0);
 #endif
 
 	return &state;
@@ -3946,7 +3946,7 @@ stabilizeChip (state_t& state)
  ************************************************************/
 
 void
-setNode (state_t& state, nodenum_t nn, BOOL s)
+setNode (state_t& state, nodenum_t nn, int s)
 {
 	state.nodes_pullup.set (nn, s);
 	state.nodes_pulldown.set (nn, !s);
@@ -4009,7 +4009,7 @@ writeDataBus (state_t* state, uint8_t d)
 	writeNodes (*state, d, { db0, db1, db2, db3, db4, db5, db6, db7 });
 }
 
-BOOL
+unsigned int
 readRW (state_t* state)
 {
 	using namespace node_names;
@@ -4121,7 +4121,7 @@ void
 step (state_t* state)
 {
 	using namespace node_names;
-	BOOL clk =  state->nodes_value.get (clk0);
+	int clk =  state->nodes_value.get (clk0);
 
 	/* invert clock */
 	setNode (*state, clk0, !clk);
@@ -4173,10 +4173,10 @@ initAndResetChip ()
 void
 chipStatus (state_t* state)
 {
-	BOOL clk =  state->nodes_value.get (clk0);
+	int clk =  state->nodes_value.get (clk0);
 	uint16_t a = readAddressBus (state);
 	uint8_t d = readDataBus (state);
-	BOOL r_w = state->nodes_value.get (rw);
+	int r_w = state->nodes_value.get (rw);
 
 	printf ("halfcyc:%d phi0:%d AB:%04X D:%02X RnW:%d PC:%04X A:%02X X:%02X Y:%02X SP:%02X P:%02X IR:%02X",
 		cycle,

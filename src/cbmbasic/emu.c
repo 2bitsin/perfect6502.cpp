@@ -4,9 +4,9 @@
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 
-typedef uint8_t BOOL;
-#define YES 1
-#define NO 0
+typedef uint8_t int_t;
+//#define YES 1
+//#define NO 0
 
 typedef uint8_t step_t;
 
@@ -20,7 +20,7 @@ static uint8_t temp_lo, temp_hi;
 
 static uint16_t AB;
 static uint8_t DB;
-static BOOL RW;
+static uint8_t RW;
 extern uint8_t memory[65536];
 
 #define RW_WRITE 0
