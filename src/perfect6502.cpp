@@ -3880,11 +3880,11 @@ setupNodesAndTransistors ()
 		for (auto&& t : state.nodes_gates [i])
 		{			
 			nodenum_t c1 = state.transistors_c1 [t];
-			if (c1 != vss && c1 != vcc)
-				add_nodes_dependant (state, i, c1);
 			nodenum_t c2 = state.transistors_c2 [t];
-			if (c2 != vss && c2 != vcc)
-				add_nodes_dependant (state, i, c2);
+
+			if (c1 != vss && c1 != vcc) add_nodes_dependant (state, i, c1);
+			if (c2 != vss && c2 != vcc) add_nodes_dependant (state, i, c2);
+
 			if (c1 != vss && c1 != vcc)
 				add_nodes_left_dependant (state, i, c1);
 			else
