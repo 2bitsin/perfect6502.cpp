@@ -3545,8 +3545,8 @@ enum group_contains_value_t
 struct state_t
 {
 
+	
 	static inline constexpr nodenum_t transistors = netlist_6502_transistor_count;
-	static inline constexpr nodenum_t nodes = netlist_6502_node_count;
 
 	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
 	c1c2_t nodes_c1c2s[netlist_6502_transistor_count*2];
@@ -3739,7 +3739,7 @@ setupNodesAndTransistors ()
 
 	/* then sum the counts to find each node's offset into the c1c2 array */
 	count_t c1c2offset = 0;	
-	for (auto&& i: range(0, state.nodes + 1))
+	for (auto&& i: range(0, netlist_6502_node_count + 1))
 	{
 		state.nodes_c1c2offset [i] = c1c2offset;		
 		c1c2offset += c1c2count [i];
@@ -3761,7 +3761,7 @@ setupNodesAndTransistors ()
 	for(auto&& list: state.nodes_left_dependant)
 		list.clear();
 
-	for (auto&& node_index: range (0, state.nodes))
+	for (auto&& node_index: range (0, netlist_6502_node_count))
 	{
 		for (auto&& transistor : state.nodes_gates [node_index])
 		{			
@@ -3792,7 +3792,7 @@ setupNodesAndTransistors ()
 void
 stabilizeChip (state_t& state)
 {
-	for (count_t i = 0; i < state.nodes; i++)
+	for (count_t i = 0; i < netlist_6502_node_count; i++)
 		state.list[state.listout].insert(i);
 
 	recalcNodeList (state);
