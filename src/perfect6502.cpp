@@ -3546,7 +3546,6 @@ struct state_t
 {
 
 	
-	static inline constexpr nodenum_t transistors = netlist_6502_transistor_count;
 
 	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
 	c1c2_t nodes_c1c2s[netlist_6502_transistor_count*2];
@@ -3695,7 +3694,6 @@ state_t*
 setupNodesAndTransistors ()
 {
 	using namespace node_names;
-	auto& node_is_pullup = netlist_6502_node_is_pullup;
 
 	/* allocate state */
 	state_t& state = G_6502_state;
@@ -3726,15 +3724,15 @@ setupNodesAndTransistors ()
 	count_t c1c2count [netlist_6502_node_count];
 	std::memset (c1c2count, 0, sizeof (c1c2count));
 
-	state.nodes_pullup = node_is_pullup;
+	state.nodes_pullup = netlist_6502_node_is_pullup;
 
-	for (auto i = 0; i < state.transistors; i++)
+	for (auto&& i: range(0, netlist_6502_transistor_count))
 	{
 		c1c2count [netlist_6502_transdefs [i].c1]++;
 		c1c2count [netlist_6502_transdefs [i].c2]++;	
 	}
 
-	for (auto&& transistor : range(0u, state.transistors))
+	for (auto&& transistor : range(0u, netlist_6502_transistor_count))
 		state.nodes_gates [netlist_6502_transdefs [transistor].gate].push(transistor);
 
 	/* then sum the counts to find each node's offset into the c1c2 array */
@@ -3748,7 +3746,7 @@ setupNodesAndTransistors ()
 	std::memset (state.nodes_c1c2s, 0, sizeof(state.nodes_c1c2s));
 	std::memset (c1c2count, 0, sizeof (c1c2count));
 
-	for (auto&& i: range (0, state.transistors))
+	for (auto&& i: range (0, netlist_6502_transistor_count))
 	{
 		nodenum_t c1 = netlist_6502_transdefs[i].c1;
 		nodenum_t c2 = netlist_6502_transdefs[i].c2;
