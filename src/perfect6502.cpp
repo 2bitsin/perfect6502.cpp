@@ -3795,29 +3795,35 @@ setupNodesAndTransistors ()
 	for(auto&& list: state.nodes_left_dependant)
 		list.clear();
 
-	for (auto&& node_index: range (0, state.nodes))
+	for (auto&& i: range (0, state.nodes))
 	{
-		for (auto&& transistor : state.nodes_gates [node_index])
+		for (auto&& transistor : state.nodes_gates [i])
 		{			
 			const auto c1 = state.transistors_c1 [transistor];
 			const auto c2 = state.transistors_c2 [transistor];
 
-			const auto cond1 = one_of<vss, vcc>(c1);
-			const auto cond2 = one_of<vss, vcc>(c2);
+			const auto cond1 = c1 != vss && c1 != vcc;
+			const auto cond2 = c2 != vss && c2 != vcc;
 
-			if (cond1) state.nodes_dependant [node_index].push_unique (c1);
-			if (cond2) state.nodes_dependant [node_index].push_unique (c2);
+			if (cond1) 				
+				state.nodes_dependant [i].push_unique (c1);
 
-			state.nodes_left_dependant [node_index].push_unique(cond1 ? c1 : c2);
+			if (cond2) 
+				state.nodes_dependant [i].push_unique (c2);
+
+			state.nodes_left_dependant [i].push_unique(cond1 ? c1 : c2);
 				
 		}
 	}
 
+#if 1 /* unnecessary - RESET will stabilize the network anyway */
 	/* all nodes are down */
 		state.nodes_value.clear();
 
 /* all transistors are off */
 		state.transistors_on.clear();
+		
+#endif
 
 	return &state;
 }
