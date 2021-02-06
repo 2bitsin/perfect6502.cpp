@@ -3577,43 +3577,6 @@ struct state_t
 };
 
 
-/************************************************************
- *
- * Algorithms for Lists
- *
- ************************************************************/
-
-static inline void
-listout_clear (state_t& state)
-{
-	state.list[state.listout].clear ();	
-}
-
-static inline void
-listout_add (state_t& state, nodenum_t i)
-{
-	state.list[state.listout].insert (i);
-}
-
-static inline void
-group_clear (state_t& state)
-{
-	state.group.clear ();
-}
-
-static inline void
-group_add (state_t& state, nodenum_t i)
-{
-	state.group.insert (i);	
-}
-
-
-/************************************************************
- *
- * Node and Transistor Emulation
- *
-	************************************************************/
-
 static inline void
 addNodeToGroup (state_t& state, nodenum_t n)
 {
@@ -3637,7 +3600,7 @@ addNodeToGroup (state_t& state, nodenum_t n)
 	if (state.group.contains (n))
 		return;
 
-	group_add (state, n);
+	state.group.insert(n);
 
 #if 0
 	if (state.group_contains_value < contains_pulldown)
@@ -3676,10 +3639,8 @@ addNodeToGroup (state_t& state, nodenum_t n)
 static inline void
 addAllNodesToGroup (state_t& state, nodenum_t node)
 {
-	group_clear (state);
-
+	state.group.clear();
 	state.group_contains_value = contains_nothing;
-
 	addNodeToGroup (state, node);
 }
 
@@ -3730,10 +3691,10 @@ recalcNode (state_t& state, nodenum_t node)
 
 		if (newv)
 			for (auto&& node : state.nodes_left_dependant[nn])
-				listout_add (state, node);
+				state.list[state.listout].insert(node);
 		else
 			for (auto&& node : state.nodes_dependant[nn])
-				listout_add (state, node);		
+				state.list[state.listout].insert(node);
 	}
 }
 
@@ -3751,7 +3712,7 @@ recalcNodeList (state_t& state)
 		if (state.list[state.listin].empty ())
 			break;
 
-		listout_clear (state);
+		state.list[state.listout].clear();
 
 		/*
 		 * for all nodes, follow their paths through
@@ -3763,7 +3724,7 @@ recalcNodeList (state_t& state)
 		for (auto&& node : state.list[state.listin])
 			recalcNode (state, node);
 	}
-	listout_clear (state);
+	state.list[state.listout].clear ();
 }
 
 state_t G_6502_state;
@@ -3888,7 +3849,7 @@ void
 stabilizeChip (state_t& state)
 {
 	for (count_t i = 0; i < state.nodes; i++)
-		listout_add (state, i);
+		state.list[state.listout].insert(i);
 
 	recalcNodeList (state);
 }
@@ -3904,7 +3865,7 @@ setNode (state_t& state, nodenum_t nn, int s)
 {
 	state.nodes_pullup.set (nn, s);
 	state.nodes_pulldown.set (nn, !s);
-	listout_add (state, nn);
+	state.list[state.listout].insert (nn);
 
 	recalcNodeList (state);
 }
