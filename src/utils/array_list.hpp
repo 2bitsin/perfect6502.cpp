@@ -5,6 +5,8 @@
 #include <cassert>
 #include <initializer_list>
 
+#include "range_iterator.hpp"
+
 template <typename _Value_type, std::size_t _Max_size>
 struct array_list
 {
@@ -132,6 +134,10 @@ struct array_list
 	constexpr auto* cend() const 
 	{
 		return &_data[size()];
+	}
+
+	constexpr auto indexes() const {
+		return range_iterator<std::size_t> { 0u, size() };
 	}
 
 private:

@@ -3769,9 +3769,9 @@ setupNodesAndTransistors ()
 
 	for (auto i = 0; i < state.transistors; i++)
 	{
-		state.transistors_gate	[i] = transdefs [i].gate;
-		state.transistors_c1		[i] = transdefs [i].c1;
-		state.transistors_c2		[i] = transdefs [i].c2;
+		state.transistors_gate	[i] = (nodenum_t)transdefs [i].gate;
+		state.transistors_c1		[i] = (nodenum_t)transdefs [i].c1;
+		state.transistors_c2		[i] = (nodenum_t)transdefs [i].c2;
 		c1c2count [transdefs [i].c1]++;
 		c1c2count [transdefs [i].c2]++;	
 	}
