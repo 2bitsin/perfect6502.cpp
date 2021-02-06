@@ -34,6 +34,7 @@
 
 #include "utils/bitmap.hpp"
 #include "utils/array_list.hpp"
+#include "utils/array_set.hpp"
 #include "utils/misc.hpp"
 
 #include "types.h"
@@ -3523,16 +3524,6 @@ constexpr netlist_transdefs netlist_6502_transdefs [Number_of_transistors] =
 	{ 923, 810, 558 }
 };
 
-
-/* nodes & transistors */
-
-/* the smallest types to fit the numbers */
-typedef uint16_t transnum_t;
-typedef uint16_t count_t;
-/* nodenum_t is declared in types.h, because it's API */
-
-
-/* a transistor from the point of view of one of the connected nodes */
 typedef struct
 {
 	transnum_t transistor;
@@ -3550,7 +3541,6 @@ enum group_contains_value_t
 	contains_vss
 };
 
-
 struct state_t
 {
 
@@ -3564,13 +3554,16 @@ struct state_t
 	bitmap<Number_of_nodes>	nodes_pulldown;
 	bitmap<Number_of_nodes>	nodes_value;
 	bitmap<Number_of_nodes>	listout_bitmap;
-	bitmap<Number_of_nodes>	groupbitmap;
 	bitmap<Number_of_transistors>	transistors_on;
 
-	int listin, listout;
+	unsigned listin, listout;
 	array_list<nodenum_t, Number_of_nodes> list [2];
 
-	array_list<nodenum_t, Number_of_nodes> group;
+	//bitmap<Number_of_nodes>	groupbitmap;
+	//array_list<nodenum_t, Number_of_nodes> group;
+
+	array_set<nodenum_t, Number_of_nodes> group;
+
 
 	array_list<nodenum_t, Number_of_nodes> nodes_gates [Number_of_nodes];
 	array_list<nodenum_t, Number_of_nodes> nodes_dependant [Number_of_nodes];
@@ -3580,8 +3573,7 @@ struct state_t
 	nodenum_t transistors_c1 [Number_of_transistors];
 	nodenum_t transistors_c2 [Number_of_transistors];
 
-	//count_t		nodes_gatecount [Number_of_nodes];
-	count_t		nodes_c1c2offset [Number_of_nodes + 1];
+	count_t	nodes_c1c2offset [Number_of_nodes + 1];
 	c1c2_t nodes_c1c2s[Number_of_transistors*2];
 
 	group_contains_value_t group_contains_value;
@@ -3614,14 +3606,12 @@ static inline void
 group_clear (state_t& state)
 {
 	state.group.clear ();
-	state.groupbitmap.clear ();
 }
 
 static inline void
 group_add (state_t& state, nodenum_t i)
 {
-	state.group.push (i);
-	state.groupbitmap.set (i, 1);
+	state.group.insert (i);	
 }
 
 
@@ -3651,7 +3641,7 @@ addNodeToGroup (state_t& state, nodenum_t n)
 		return;
 	}
 
-	if (state.groupbitmap.get (n))
+	if (state.group.contains (n))
 		return;
 
 	group_add (state, n);
@@ -3802,7 +3792,6 @@ setupNodesAndTransistors ()
 	state.transistors_on.clear ();
 
 	state.group.clear ();
-	state.groupbitmap.clear ();
 
 	state.listin = 0;
 	state.listout = 1;
