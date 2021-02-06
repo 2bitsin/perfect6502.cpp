@@ -3762,25 +3762,25 @@ setupNodesAndTransistors ()
 	std::memset (state.transistors_c2,		0, sizeof (state.transistors_c2		));	
 	std::memset (state.nodes_c1c2offset,	0, sizeof (state.nodes_c1c2offset	));
 
+	count_t c1c2count [Number_of_nodes];
+	std::memset (c1c2count, 0, sizeof (c1c2count));
+
 	state.nodes_pullup = node_is_pullup;
 
 	for (auto i = 0; i < state.transistors; i++)
 	{
-		state.transistors_gate [i] = static_cast<nodenum_t>(transdefs [i].gate);
-		state.transistors_c1 [i] = static_cast<nodenum_t>(transdefs [i].c1);
-		state.transistors_c2 [i] = static_cast<nodenum_t>(transdefs [i].c2);
+		state.transistors_gate	[i] = transdefs [i].gate;
+		state.transistors_c1		[i] = transdefs [i].c1;
+		state.transistors_c2		[i] = transdefs [i].c2;
+		c1c2count [transdefs [i].c1]++;
+		c1c2count [transdefs [i].c2]++;	
 	}
 
-	count_t c1c2count [Number_of_nodes];
-	std::memset (c1c2count, 0, sizeof (c1c2count));
 
 	
 	for (nodenum_t i = 0; i < state.transistors; i++)
-	{
 		state.nodes_gates [state.transistors_gate [i]].push(i);
-		c1c2count [state.transistors_c1 [i]]++;
-		c1c2count [state.transistors_c2 [i]]++;	
-	}
+
 	/* then sum the counts to find each node's offset into the c1c2 array */
 	count_t c1c2offset = 0;
 	count_t i;
