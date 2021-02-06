@@ -3544,26 +3544,23 @@ enum group_contains_value_t
 
 struct state_t
 {
+	bitmap<netlist_6502_node_count>	nodes_pullup;
+	bitmap<netlist_6502_node_count>	nodes_pulldown;
+	bitmap<netlist_6502_node_count>	nodes_value;
 
-	
+	bitmap<netlist_6502_transistor_count>	transistors_on;
 
 	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
 	c1c2_t nodes_c1c2s[netlist_6502_transistor_count*2];
 
-	bitmap<netlist_6502_transistor_count>	transistors_on;
-
 	array_list<nodenum_t, netlist_6502_node_count> nodes_gates [netlist_6502_node_count];
 	array_list<nodenum_t, netlist_6502_node_count> nodes_dependant [netlist_6502_node_count];
 	array_list<nodenum_t, netlist_6502_node_count> nodes_left_dependant [netlist_6502_node_count];
-
-	bitmap<netlist_6502_node_count>	nodes_pullup;
-	bitmap<netlist_6502_node_count>	nodes_pulldown;
-	bitmap<netlist_6502_node_count>	nodes_value;
 	
 	array_set<nodenum_t, netlist_6502_node_count> group;
 	group_contains_value_t group_contains_value;
 
-	unsigned listin, listout;
+	unsigned in, out;
 	array_set<nodenum_t, netlist_6502_node_count> list [2];
 };
 
@@ -3655,7 +3652,7 @@ recalcNode (state_t& state, nodenum_t node)
 		auto& dependant = new_value ? state.nodes_left_dependant[node_index] : state.nodes_dependant[node_index];
 
 		for (auto&& node : dependant)
-			state.list[state.listout].insert(node);
+			state.list[state.out].insert(node);
 	}
 }
 
@@ -3669,11 +3666,11 @@ recalcNodeList (state_t& state)
  * the data storage of the primary list as the
  * secondary list
  */
-		std::swap (state.listin, state.listout);
+		std::swap (state.in, state.out);
 
-		if (state.list[state.listin].empty ())
+		if (state.list[state.in].empty ())
 			break;
-		state.list[state.listout].clear();
+		state.list[state.out].clear();
 
 		/*
 		 * for all nodes, follow their paths through
@@ -3682,10 +3679,10 @@ recalcNodeList (state_t& state)
 		 * all transistors controlled by this path, collecting
 		 * all nodes that changed because of it for the next run
 		 */
-		for (auto&& node : state.list[state.listin])
+		for (auto&& node : state.list[state.in])
 			recalcNode (state, node);
 	}
-	state.list[state.listout].clear ();
+	state.list[state.out].clear ();
 }
 
 state_t G_6502_state;
@@ -3707,8 +3704,8 @@ setupNodesAndTransistors ()
 
 	state.group.clear ();
 
-	state.listin = 0;
-	state.listout = 1;
+	state.in = 0;
+	state.out = 1;
 	state.list[0].clear ();
 	state.list[1].clear ();
 
@@ -3791,7 +3788,7 @@ void
 stabilizeChip (state_t& state)
 {
 	for (count_t i = 0; i < netlist_6502_node_count; i++)
-		state.list[state.listout].insert(i);
+		state.list[state.out].insert(i);
 
 	recalcNodeList (state);
 }
@@ -3807,7 +3804,7 @@ setNode (state_t& state, nodenum_t nn, int s)
 {
 	state.nodes_pullup.set (nn, s);
 	state.nodes_pulldown.set (nn, !s);
-	state.list[state.listout].insert (nn);
+	state.list[state.out].insert (nn);
 
 	recalcNodeList (state);
 }
