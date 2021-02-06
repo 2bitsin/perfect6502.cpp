@@ -159,11 +159,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\apple1basic\apple1basic.c" />
+    <ClCompile Include="src\apple1basic\apple1basic.cpp" />
     <ClCompile Include="src\perfect6502.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\perfect6502.h" />
+    <ClInclude Include="src\perfect6502.hpp" />
     <ClInclude Include="src\types.h" />
     <ClInclude Include="src\utils\bitmap.hpp" />
   </ItemGroup>

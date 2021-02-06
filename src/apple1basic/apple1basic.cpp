@@ -1,8 +1,9 @@
 #include <stdio.h>
 //#ifndef _WIN32
 #include <sys/stat.h>
+#include <io.h>
 
-#include "../perfect6502.h"
+#include "../perfect6502.hpp"
  
 /************************************************************
  *

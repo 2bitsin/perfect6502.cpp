@@ -39,7 +39,7 @@
 #include "utils/misc.hpp"
 
 #include "types.h"
-#include "perfect6502.h"
+#include "perfect6502.hpp"
 
 namespace node_names
 {
@@ -3550,13 +3550,6 @@ struct state_t
 	static inline constexpr nodenum_t vss = node_names::vss;
 	static inline constexpr nodenum_t vcc = node_names::vcc;
 
-//	nodenum_t transistors_gate [Number_of_transistors];
-//	nodenum_t transistors_c1 [Number_of_transistors];
-//	nodenum_t transistors_c2 [Number_of_transistors];
-
-	static inline constexpr netlist_transdefs transdefs [Number_of_transistors] = netlist_6502_transdefs;
-
-
 	count_t	nodes_c1c2offset [Number_of_nodes + 1];
 	c1c2_t nodes_c1c2s[Number_of_transistors*2];
 
@@ -3642,7 +3635,9 @@ recalcNode (state_t& state, nodenum_t node)
 
 	/* get the state of the group */
 	
-	bool new_value{ one_of<contains_vcc, contains_pullup, contains_hi>(state.group_contains_value) };
+	const bool new_value { 
+		one_of<contains_vcc, contains_pullup, contains_hi>(state.group_contains_value) 
+	};
 
 	/*
 	 * - set all nodes to the group state
@@ -3650,17 +3645,17 @@ recalcNode (state_t& state, nodenum_t node)
 	 * - collect all nodes behind toggled transistors
 	 *   for the next run
 	 */
-	for (auto&& nn : state.group)
+	for (auto&& node_index : state.group)
 	{
-		if (state.nodes_value.get (nn) == new_value)
+		if (state.nodes_value.get (node_index) == new_value)
 			continue;
 		
-		state.nodes_value.set (nn, new_value);
+		state.nodes_value.set (node_index, new_value);
 
-		for (auto&& transistor: state.nodes_gates[nn])
+		for (auto&& transistor: state.nodes_gates[node_index])
 			state.transistors_on.set (transistor, new_value);
 
-		auto& dependant = new_value ? state.nodes_left_dependant[nn] : state.nodes_dependant[nn];
+		auto& dependant = new_value ? state.nodes_left_dependant[node_index] : state.nodes_dependant[node_index];
 
 		for (auto&& node : dependant)
 			state.list[state.listout].insert(node);
@@ -3706,6 +3701,7 @@ setupNodesAndTransistors ()
 
 	/* allocate state */
 	state_t& state = G_6502_state;
+	
 
 	state.nodes_pullup.clear ();
 	state.nodes_pulldown.clear ();
@@ -3736,12 +3732,12 @@ setupNodesAndTransistors ()
 
 	for (auto i = 0; i < state.transistors; i++)
 	{
-		c1c2count [state.transdefs [i].c1]++;
-		c1c2count [state.transdefs [i].c2]++;	
+		c1c2count [netlist_6502_transdefs [i].c1]++;
+		c1c2count [netlist_6502_transdefs [i].c2]++;	
 	}
 
 	for (auto&& transistor : range(0u, state.transistors))
-		state.nodes_gates [state.transdefs [transistor].gate].push(transistor);
+		state.nodes_gates [netlist_6502_transdefs [transistor].gate].push(transistor);
 
 	/* then sum the counts to find each node's offset into the c1c2 array */
 	count_t c1c2offset = 0;	
@@ -3756,8 +3752,8 @@ setupNodesAndTransistors ()
 
 	for (auto&& i: range (0, state.transistors))
 	{
-		nodenum_t c1 = state.transdefs[i].c1;
-		nodenum_t c2 = state.transdefs[i].c2;
+		nodenum_t c1 = netlist_6502_transdefs[i].c1;
+		nodenum_t c2 = netlist_6502_transdefs[i].c2;
 		state.nodes_c1c2s [state.nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2_t { (transnum_t)i, c2 };
 		state.nodes_c1c2s [state.nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2_t { (transnum_t)i, c1 };
 	}
@@ -3771,8 +3767,8 @@ setupNodesAndTransistors ()
 	{
 		for (auto&& transistor : state.nodes_gates [node_index])
 		{			
-			const auto c1 = state.transdefs[transistor].c1;
-			const auto c2 = state.transdefs[transistor].c2;
+			const auto c1 = netlist_6502_transdefs[transistor].c1;
+			const auto c2 = netlist_6502_transdefs[transistor].c2;
 
 			const auto cond1 = !one_of<vss, vcc>(c1);
 			const auto cond2 = !one_of<vss, vcc>(c2);
