@@ -1,60 +1,64 @@
 #pragma once
 
 template <typename Q>
-struct range_iterator
+struct range
 {
 	using value_type = Q;
 
-	struct iterator_type
+	struct iterator
 	{
 		using value_type = Q;
 
-		constexpr iterator_type() = default;
-		constexpr iterator_type(value_type v): current(v) {}
+		constexpr iterator() = default;
+		constexpr iterator(value_type v): current(v) {}
 
-		constexpr iterator_type(const iterator_type&) = default;
-		constexpr iterator_type(iterator_type&&) = default;
-		constexpr iterator_type& operator = (const iterator_type&) = default;
-		constexpr iterator_type& operator = (iterator_type&&) = default;
+		constexpr iterator(const iterator&) = default;
+		constexpr iterator(iterator&&) = default;
+		constexpr iterator& operator = (const iterator&) = default;
+		constexpr iterator& operator = (iterator&&) = default;
 
-		constexpr auto& operator *  (   ) const { return current; }
-		constexpr auto& operator ++ (   ) const { ++current; return *this; }
-		constexpr auto  operator ++ (int) const 
+		constexpr auto& operator *  () const { return current; }
+		constexpr auto& operator ++ () { ++current; return *this; }
+		constexpr auto& operator -- () { --current; return *this; }
+		constexpr auto  operator ++ (int)  
 		{
-			iterator_type tmp { current };
+			iterator tmp { current };
 			++current;
 			return tmp;
 		}
-		constexpr auto& operator -- (   ) const { --current; return *this; }
-		constexpr auto  operator -- (int) const 
+		constexpr auto  operator -- (int)
 		{
-			iterator_type tmp { current };
+			iterator tmp { current };
 			--current;
 			return tmp;
 		}
 
-		constexpr bool operator <=> (const iterator_type&) const = default;
+		constexpr auto operator <=> (const iterator&) const = default;
 
 	private:
 		value_type current;
 	};
 
-	constexpr range_iterator(value_type _begin, value_type _end)
+	constexpr range(value_type _begin, value_type _end)
 	: _begin	{ std::move (_begin) }, 
 		_end		{ std::move	(_end)	 } 
 	{}
 
-	constexpr range_iterator() = default;
-	constexpr range_iterator(const range_iterator&) = default;
-	constexpr range_iterator(range_iterator&&) = default;
-	constexpr range_iterator& operator = (const range_iterator&) = default;
-	constexpr range_iterator& operator = (range_iterator&&) = default;
+	constexpr range() = default;
+	constexpr range(const range&) = default;
+	constexpr range(range&&) = default;
+	constexpr range& operator = (const range&) = default;
+	constexpr range& operator = (range&&) = default;
 
-	constexpr auto begin()	const { return iterator_type { _begin	}	;	}
-	constexpr auto end()		const { return iterator_type { _end		}	;	}
-	constexpr auto cbegin() const { return iterator_type { _begin	}	;	}
-	constexpr auto cend()		const { return iterator_type { _end		}	;	}
+	constexpr auto begin()	const { return iterator { _begin	}	;	}
+	constexpr auto end()		const { return iterator { _end		}	;	}
+	constexpr auto cbegin() const { return iterator { _begin	}	;	}
+	constexpr auto cend()		const { return iterator { _end		}	;	}
 
 private:
-	iterator_type _begin, _end;
+	value_type _begin, _end;
 };
+
+
+template <typename _Lhs, typename _Rhs>
+range(_Lhs&&, _Rhs&&) -> range<std::common_type_t<_Lhs, _Rhs>>;

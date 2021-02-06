@@ -137,7 +137,7 @@ struct array_list
 	}
 
 	constexpr auto indexes() const {
-		return range_iterator<std::size_t> { 0u, size() };
+		return range<std::size_t> { 0u, size() };
 	}
 
 private:

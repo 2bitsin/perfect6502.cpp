@@ -35,6 +35,7 @@
 #include "utils/bitmap.hpp"
 #include "utils/array_list.hpp"
 #include "utils/array_set.hpp"
+#include "utils/range_iterator.hpp"
 #include "utils/misc.hpp"
 
 #include "types.h"
@@ -3599,19 +3600,6 @@ addNodeToGroup (state_t& state, nodenum_t n)
 
 	state.group.insert(n);
 
-#if 0
-	if (state.group_contains_value < contains_pulldown)
-		if (state.nodes_pulldown.get (n))
-			state.group_contains_value = contains_pulldown;
-	
-	if (state.group_contains_value < contains_pullup)
-		if (state.nodes_pullup.get (n))
-			state.group_contains_value = contains_pullup;
-
-	if (state.group_contains_value < contains_hi)
-		if (state.nodes_value.get (n))
-			state.group_contains_value = contains_hi;
-#else
 	switch(state.group_contains_value)
 	{
 	case contains_nothing:	if (state.nodes_pulldown	.get (n)) inplace_max (state.group_contains_value, contains_pulldown);
@@ -3620,11 +3608,10 @@ addNodeToGroup (state_t& state, nodenum_t n)
 	default:
 		break;
 	}
-#endif
 
 	/* revisit all transistors that control this node */
-	count_t end = state.nodes_c1c2offset [n + 1];
-	for (count_t t = state.nodes_c1c2offset [n]; t < end; t++)
+	const auto& offs = state.nodes_c1c2offset;
+	for(auto&& t : range (offs[n], offs[n + 1]))
 	{
 		c1c2_t c = state.nodes_c1c2s [t];
 		/* if the transistor connects c1 and c2... */
@@ -3778,29 +3765,29 @@ setupNodesAndTransistors ()
 
 
 	
-	for (nodenum_t i = 0; i < state.transistors; i++)
+	for (auto&& i : range(0u, state.transistors))
 		state.nodes_gates [state.transistors_gate [i]].push(i);
 
 	/* then sum the counts to find each node's offset into the c1c2 array */
 	count_t c1c2offset = 0;
-	count_t i;
-	for (i = 0; i < state.nodes; i++)
+	
+	for (auto&& i: range(0, state.nodes + 1))
 	{
-		state.nodes_c1c2offset [i] = c1c2offset;
+		state.nodes_c1c2offset [i] = c1c2offset;		
 		c1c2offset += c1c2count [i];
 	}
-	state.nodes_c1c2offset [i] = c1c2offset;
+	//state.nodes_c1c2offset [i] = c1c2offset;
 	/* create and fill the nodes_c1c2s array according to these offsets */
 
 	std::memset (state.nodes_c1c2s, 0, sizeof(state.nodes_c1c2s));
 	std::memset (c1c2count, 0, sizeof (c1c2count));
 
-	for (i = 0; i < state.transistors; i++)
+	for (auto&& i: range (0, state.transistors))
 	{
 		nodenum_t c1 = state.transistors_c1 [i];
 		nodenum_t c2 = state.transistors_c2 [i];
-		state.nodes_c1c2s [state.nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2_t { i, c2 };
-		state.nodes_c1c2s [state.nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2_t { i, c1 };
+		state.nodes_c1c2s [state.nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2_t { (transnum_t)i, c2 };
+		state.nodes_c1c2s [state.nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2_t { (transnum_t)i, c1 };
 	}
 
 	for(auto&& list: state.nodes_dependant)
@@ -3808,36 +3795,29 @@ setupNodesAndTransistors ()
 	for(auto&& list: state.nodes_left_dependant)
 		list.clear();
 
-	for (i = 0; i < state.nodes; i++)
+	for (auto&& node_index: range (0, state.nodes))
 	{
-		for (auto&& transistor : state.nodes_gates [i])
+		for (auto&& transistor : state.nodes_gates [node_index])
 		{			
 			const auto c1 = state.transistors_c1 [transistor];
 			const auto c2 = state.transistors_c2 [transistor];
 
-			const auto cond1 = c1 != vss && c1 != vcc;
-			const auto cond2 = c2 != vss && c2 != vcc;
+			const auto cond1 = one_of<vss, vcc>(c1);
+			const auto cond2 = one_of<vss, vcc>(c2);
 
-			if (cond1) 				
-				state.nodes_dependant [i].push_unique (c1);
+			if (cond1) state.nodes_dependant [node_index].push_unique (c1);
+			if (cond2) state.nodes_dependant [node_index].push_unique (c2);
 
-			if (cond2) 
-				state.nodes_dependant [i].push_unique (c2);
-
-			state.nodes_left_dependant [i].push_unique(cond1 ? c1 : c2);
+			state.nodes_left_dependant [node_index].push_unique(cond1 ? c1 : c2);
 				
 		}
 	}
 
-#if 1 /* unnecessary - RESET will stabilize the network anyway */
 	/* all nodes are down */
-	for (nodenum_t nn = 0; nn < state.nodes; nn++)
-		state.nodes_value.set (nn, 0);
+		state.nodes_value.clear();
 
 /* all transistors are off */
-	for (transnum_t tn = 0; tn < state.transistors; tn++)
-		state.transistors_on.set (tn, 0);
-#endif
+		state.transistors_on.clear();
 
 	return &state;
 }
