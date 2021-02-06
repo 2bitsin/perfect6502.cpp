@@ -248,10 +248,10 @@ namespace node_names
 
 }
 
-static inline constexpr auto Number_of_nodes = 1725;
-static inline constexpr auto Number_of_transistors = 3239;
+static inline constexpr auto netlist_6502_node_count = 1725;
+static inline constexpr auto netlist_6502_transistor_count = 3239;
 
-constexpr bitmap<Number_of_nodes> netlist_6502_node_is_pullup
+constexpr bitmap<netlist_6502_node_count> netlist_6502_node_is_pullup
 {
 	1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1,
 	0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1,
@@ -282,7 +282,7 @@ constexpr bitmap<Number_of_nodes> netlist_6502_node_is_pullup
 	1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1
 };
 
-constexpr netlist_transdefs netlist_6502_transdefs [Number_of_transistors] =
+constexpr netlist_transdefs netlist_6502_transdefs [netlist_6502_transistor_count] =
 {
 	{ 357, 558, 217 },
 	{ 1608, 657, 349 },
@@ -3545,29 +3545,27 @@ enum group_contains_value_t
 struct state_t
 {
 
-	static inline constexpr nodenum_t transistors = Number_of_transistors;
-	static inline constexpr nodenum_t nodes = Number_of_nodes;
-	static inline constexpr nodenum_t vss = node_names::vss;
-	static inline constexpr nodenum_t vcc = node_names::vcc;
+	static inline constexpr nodenum_t transistors = netlist_6502_transistor_count;
+	static inline constexpr nodenum_t nodes = netlist_6502_node_count;
 
-	count_t	nodes_c1c2offset [Number_of_nodes + 1];
-	c1c2_t nodes_c1c2s[Number_of_transistors*2];
+	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
+	c1c2_t nodes_c1c2s[netlist_6502_transistor_count*2];
 
-	bitmap<Number_of_transistors>	transistors_on;
+	bitmap<netlist_6502_transistor_count>	transistors_on;
 
-	array_list<nodenum_t, Number_of_nodes> nodes_gates [Number_of_nodes];
-	array_list<nodenum_t, Number_of_nodes> nodes_dependant [Number_of_nodes];
-	array_list<nodenum_t, Number_of_nodes> nodes_left_dependant [Number_of_nodes];
+	array_list<nodenum_t, netlist_6502_node_count> nodes_gates [netlist_6502_node_count];
+	array_list<nodenum_t, netlist_6502_node_count> nodes_dependant [netlist_6502_node_count];
+	array_list<nodenum_t, netlist_6502_node_count> nodes_left_dependant [netlist_6502_node_count];
 
-	bitmap<Number_of_nodes>	nodes_pullup;
-	bitmap<Number_of_nodes>	nodes_pulldown;
-	bitmap<Number_of_nodes>	nodes_value;
+	bitmap<netlist_6502_node_count>	nodes_pullup;
+	bitmap<netlist_6502_node_count>	nodes_pulldown;
+	bitmap<netlist_6502_node_count>	nodes_value;
 	
-	array_set<nodenum_t, Number_of_nodes> group;
+	array_set<nodenum_t, netlist_6502_node_count> group;
 	group_contains_value_t group_contains_value;
 
 	unsigned listin, listout;
-	array_set<nodenum_t, Number_of_nodes> list [2];
+	array_set<nodenum_t, netlist_6502_node_count> list [2];
 };
 
 
@@ -3579,12 +3577,12 @@ addNodeToGroup (state_t& state, nodenum_t n)
 	 * with the same value - just because they all derive their value from
 	 * the fact that they are connected to vcc or vss.
 	 */
-	if (n == state.vss)
+	if (n == node_names::vss)
 	{
 		state.group_contains_value = contains_vss;
 		return;
 	}
-	if (n == state.vcc)
+	if (n == node_names::vcc)
 	{
 		if (state.group_contains_value != contains_vss)
 			state.group_contains_value = contains_vcc;
@@ -3725,7 +3723,7 @@ setupNodesAndTransistors ()
 
 	std::memset (state.nodes_c1c2offset,	0, sizeof (state.nodes_c1c2offset	));
 
-	count_t c1c2count [Number_of_nodes];
+	count_t c1c2count [netlist_6502_node_count];
 	std::memset (c1c2count, 0, sizeof (c1c2count));
 
 	state.nodes_pullup = node_is_pullup;
