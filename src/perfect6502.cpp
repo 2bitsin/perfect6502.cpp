@@ -3549,23 +3549,6 @@ struct state_t
 	static inline constexpr nodenum_t vss = node_names::vss;
 	static inline constexpr nodenum_t vcc = node_names::vcc;
 
-	/* everything that describes a node */
-	bitmap<Number_of_nodes>	nodes_pullup;
-	bitmap<Number_of_nodes>	nodes_pulldown;
-	bitmap<Number_of_nodes>	nodes_value;
-	
-	bitmap<Number_of_transistors>	transistors_on;
-
-	unsigned listin, listout;
-	array_set<nodenum_t, Number_of_nodes> list [2];
-
-	array_set<nodenum_t, Number_of_nodes> group;
-
-
-	array_list<nodenum_t, Number_of_nodes> nodes_gates [Number_of_nodes];
-	array_list<nodenum_t, Number_of_nodes> nodes_dependant [Number_of_nodes];
-	array_list<nodenum_t, Number_of_nodes> nodes_left_dependant [Number_of_nodes];
-
 	nodenum_t transistors_gate [Number_of_transistors];
 	nodenum_t transistors_c1 [Number_of_transistors];
 	nodenum_t transistors_c2 [Number_of_transistors];
@@ -3573,7 +3556,21 @@ struct state_t
 	count_t	nodes_c1c2offset [Number_of_nodes + 1];
 	c1c2_t nodes_c1c2s[Number_of_transistors*2];
 
+	bitmap<Number_of_transistors>	transistors_on;
+
+	array_list<nodenum_t, Number_of_nodes> nodes_gates [Number_of_nodes];
+	array_list<nodenum_t, Number_of_nodes> nodes_dependant [Number_of_nodes];
+	array_list<nodenum_t, Number_of_nodes> nodes_left_dependant [Number_of_nodes];
+
+	bitmap<Number_of_nodes>	nodes_pullup;
+	bitmap<Number_of_nodes>	nodes_pulldown;
+	bitmap<Number_of_nodes>	nodes_value;
+	
+	array_set<nodenum_t, Number_of_nodes> group;
 	group_contains_value_t group_contains_value;
+
+	unsigned listin, listout;
+	array_set<nodenum_t, Number_of_nodes> list [2];
 };
 
 
@@ -3671,7 +3668,7 @@ recalcNode (state_t& state, nodenum_t node)
 	addAllNodesToGroup (state, node);
 
 	/* get the state of the group */
-	auto newv = getGroupValue (state);
+	const auto new_value = getGroupValue (state);
 
 	/*
 	 * - set all nodes to the group state
@@ -3681,20 +3678,21 @@ recalcNode (state_t& state, nodenum_t node)
 	 */
 	for (auto&& nn : state.group)
 	{
-		if (state.nodes_value.get (nn) == newv)
+		if (state.nodes_value.get (nn) == new_value)
 			continue;
 		
-		state.nodes_value.set (nn, newv);
+		state.nodes_value.set (nn, new_value);
 
 		for (auto&& tn: state.nodes_gates[nn])
-			state.transistors_on.set (tn, newv);
+			state.transistors_on.set (tn, new_value);
 
-		if (newv)
-			for (auto&& node : state.nodes_left_dependant[nn])
-				state.list[state.listout].insert(node);
-		else
-			for (auto&& node : state.nodes_dependant[nn])
-				state.list[state.listout].insert(node);
+		auto& dependant = new_value 
+			? state.nodes_left_dependant[nn] 
+			: state.nodes_dependant[nn]
+		;
+
+		for (auto&& node : dependant)
+			state.list[state.listout].insert(node);
 	}
 }
 
@@ -3709,9 +3707,9 @@ recalcNodeList (state_t& state)
  * secondary list
  */
 		std::swap (state.listin, state.listout);
+
 		if (state.list[state.listin].empty ())
 			break;
-
 		state.list[state.listout].clear();
 
 		/*
