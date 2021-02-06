@@ -3553,14 +3553,11 @@ struct state_t
 	bitmap<Number_of_nodes>	nodes_pullup;
 	bitmap<Number_of_nodes>	nodes_pulldown;
 	bitmap<Number_of_nodes>	nodes_value;
-	bitmap<Number_of_nodes>	listout_bitmap;
+	
 	bitmap<Number_of_transistors>	transistors_on;
 
 	unsigned listin, listout;
-	array_list<nodenum_t, Number_of_nodes> list [2];
-
-	//bitmap<Number_of_nodes>	groupbitmap;
-	//array_list<nodenum_t, Number_of_nodes> group;
+	array_set<nodenum_t, Number_of_nodes> list [2];
 
 	array_set<nodenum_t, Number_of_nodes> group;
 
@@ -3589,17 +3586,13 @@ struct state_t
 static inline void
 listout_clear (state_t& state)
 {
-	state.list[state.listout].clear ();
-	state.listout_bitmap.clear ();
+	state.list[state.listout].clear ();	
 }
 
 static inline void
 listout_add (state_t& state, nodenum_t i)
 {
-	if (state.listout_bitmap.get (i))
-		return;
-	state.list[state.listout].push (i);
-	state.listout_bitmap.set (i, 1);
+	state.list[state.listout].insert (i);
 }
 
 static inline void
@@ -3797,7 +3790,6 @@ setupNodesAndTransistors ()
 	state.listout = 1;
 	state.list[0].clear ();
 	state.list[1].clear ();
-	state.listout_bitmap.clear ();
 
 	for(auto& list: state.nodes_gates)
 		list.clear();
