@@ -3550,9 +3550,12 @@ struct state_t
 	static inline constexpr nodenum_t vss = node_names::vss;
 	static inline constexpr nodenum_t vcc = node_names::vcc;
 
-	nodenum_t transistors_gate [Number_of_transistors];
-	nodenum_t transistors_c1 [Number_of_transistors];
-	nodenum_t transistors_c2 [Number_of_transistors];
+//	nodenum_t transistors_gate [Number_of_transistors];
+//	nodenum_t transistors_c1 [Number_of_transistors];
+//	nodenum_t transistors_c2 [Number_of_transistors];
+
+	static inline constexpr netlist_transdefs transdefs [Number_of_transistors] = netlist_6502_transdefs;
+
 
 	count_t	nodes_c1c2offset [Number_of_nodes + 1];
 	c1c2_t nodes_c1c2s[Number_of_transistors*2];
@@ -3611,9 +3614,9 @@ addNodeToGroup (state_t& state, nodenum_t n)
 
 	/* revisit all transistors that control this node */
 	const auto& offs = state.nodes_c1c2offset;
-	for(auto&& t : range (offs[n], offs[n + 1]))
+	for(auto&& transistor : range (offs[n], offs[n + 1]))
 	{
-		c1c2_t c = state.nodes_c1c2s [t];
+		auto c = state.nodes_c1c2s [transistor];
 		/* if the transistor connects c1 and c2... */
 		if (state.transistors_on.get (c.transistor))
 			addNodeToGroup (state, c.other_node);
@@ -3628,23 +3631,6 @@ addAllNodesToGroup (state_t& state, nodenum_t node)
 	addNodeToGroup (state, node);
 }
 
-static inline bool
-getGroupValue (state_t& state)
-{
-	switch (state.group_contains_value)
-	{
-	case contains_vcc:
-	case contains_pullup:
-	case contains_hi:
-		return true;
-	case contains_vss:
-	case contains_pulldown:
-	case contains_nothing:
-	default:
-		return false;
-	}
-}
-
 static inline void
 recalcNode (state_t& state, nodenum_t node)
 {
@@ -3655,7 +3641,8 @@ recalcNode (state_t& state, nodenum_t node)
 	addAllNodesToGroup (state, node);
 
 	/* get the state of the group */
-	const auto new_value = getGroupValue (state);
+	
+	bool new_value{ one_of<contains_vcc, contains_pullup, contains_hi>(state.group_contains_value) };
 
 	/*
 	 * - set all nodes to the group state
@@ -3670,13 +3657,10 @@ recalcNode (state_t& state, nodenum_t node)
 		
 		state.nodes_value.set (nn, new_value);
 
-		for (auto&& tn: state.nodes_gates[nn])
-			state.transistors_on.set (tn, new_value);
+		for (auto&& transistor: state.nodes_gates[nn])
+			state.transistors_on.set (transistor, new_value);
 
-		auto& dependant = new_value 
-			? state.nodes_left_dependant[nn] 
-			: state.nodes_dependant[nn]
-		;
+		auto& dependant = new_value ? state.nodes_left_dependant[nn] : state.nodes_dependant[nn];
 
 		for (auto&& node : dependant)
 			state.list[state.listout].insert(node);
@@ -3719,7 +3703,6 @@ setupNodesAndTransistors ()
 {
 	using namespace node_names;
 	auto& node_is_pullup = netlist_6502_node_is_pullup;
-	auto& transdefs = netlist_6502_transdefs;
 
 	/* allocate state */
 	state_t& state = G_6502_state;
@@ -3744,9 +3727,6 @@ setupNodesAndTransistors ()
 	for(auto& list: state.nodes_left_dependant)
 		list.clear();
 
-	std::memset (state.transistors_gate,	0, sizeof (state.transistors_gate	));
-	std::memset (state.transistors_c1,		0, sizeof (state.transistors_c1		));
-	std::memset (state.transistors_c2,		0, sizeof (state.transistors_c2		));	
 	std::memset (state.nodes_c1c2offset,	0, sizeof (state.nodes_c1c2offset	));
 
 	count_t c1c2count [Number_of_nodes];
@@ -3756,36 +3736,28 @@ setupNodesAndTransistors ()
 
 	for (auto i = 0; i < state.transistors; i++)
 	{
-		state.transistors_gate	[i] = (nodenum_t)transdefs [i].gate;
-		state.transistors_c1		[i] = (nodenum_t)transdefs [i].c1;
-		state.transistors_c2		[i] = (nodenum_t)transdefs [i].c2;
-		c1c2count [transdefs [i].c1]++;
-		c1c2count [transdefs [i].c2]++;	
+		c1c2count [state.transdefs [i].c1]++;
+		c1c2count [state.transdefs [i].c2]++;	
 	}
 
-
-	
-	for (auto&& i : range(0u, state.transistors))
-		state.nodes_gates [state.transistors_gate [i]].push(i);
+	for (auto&& transistor : range(0u, state.transistors))
+		state.nodes_gates [state.transdefs [transistor].gate].push(transistor);
 
 	/* then sum the counts to find each node's offset into the c1c2 array */
-	count_t c1c2offset = 0;
-	
+	count_t c1c2offset = 0;	
 	for (auto&& i: range(0, state.nodes + 1))
 	{
 		state.nodes_c1c2offset [i] = c1c2offset;		
 		c1c2offset += c1c2count [i];
 	}
-	//state.nodes_c1c2offset [i] = c1c2offset;
-	/* create and fill the nodes_c1c2s array according to these offsets */
 
 	std::memset (state.nodes_c1c2s, 0, sizeof(state.nodes_c1c2s));
 	std::memset (c1c2count, 0, sizeof (c1c2count));
 
 	for (auto&& i: range (0, state.transistors))
 	{
-		nodenum_t c1 = state.transistors_c1 [i];
-		nodenum_t c2 = state.transistors_c2 [i];
+		nodenum_t c1 = state.transdefs[i].c1;
+		nodenum_t c2 = state.transdefs[i].c2;
 		state.nodes_c1c2s [state.nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2_t { (transnum_t)i, c2 };
 		state.nodes_c1c2s [state.nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2_t { (transnum_t)i, c1 };
 	}
@@ -3799,8 +3771,8 @@ setupNodesAndTransistors ()
 	{
 		for (auto&& transistor : state.nodes_gates [node_index])
 		{			
-			const auto c1 = state.transistors_c1 [transistor];
-			const auto c2 = state.transistors_c2 [transistor];
+			const auto c1 = state.transdefs[transistor].c1;
+			const auto c2 = state.transdefs[transistor].c2;
 
 			const auto cond1 = !one_of<vss, vcc>(c1);
 			const auto cond2 = !one_of<vss, vcc>(c2);
@@ -3862,8 +3834,8 @@ readNodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 	for (long long i = nodelist.size () - 1; i >= 0; i--)
 	{
 		result <<= 1;
-		result |= state->nodes_value.get (*(nodelist.begin () + i));
-	}
+		result |= (int)state->nodes_value.get (*(nodelist.begin () + i));
+	 }
 	return result;
 }
 
