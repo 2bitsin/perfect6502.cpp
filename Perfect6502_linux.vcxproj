@@ -43,6 +43,7 @@
     <ClInclude Include="src\types.h" />
     <ClInclude Include="src\utils\bitmap.hpp" />
     <ClInclude Include="src\utils\array_list.hpp" />
+    <ClInclude Include="src\utils\misc.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\apple1basic.bin" />

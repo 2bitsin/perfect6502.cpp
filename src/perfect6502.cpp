@@ -34,6 +34,7 @@
 
 #include "utils/bitmap.hpp"
 #include "utils/array_list.hpp"
+#include "utils/misc.hpp"
 
 #include "types.h"
 #include "perfect6502.h"
@@ -3655,37 +3656,28 @@ addNodeToGroup (state_t& state, nodenum_t n)
 
 	group_add (state, n);
 
+#if 0
 	if (state.group_contains_value < contains_pulldown)
-	{
 		if (state.nodes_pulldown.get (n))
 			state.group_contains_value = contains_pulldown;
-		if (state.group_contains_value < contains_pullup)
-		{
-			if (state.nodes_pullup.get (n))
-				state.group_contains_value = contains_pullup;
-			if (state.group_contains_value < contains_hi)
-				if (state.nodes_value.get (n))
-					state.group_contains_value = contains_hi;
-		}
-	}
-		
-/*
-	switch(state.group_contains_value)
-	{
-	case contains_vss:
-	case contains_vcc:
-	case contains_pulldown:
-		if (state.nodes_pulldown.get (n))
-			state.group_contains_value = contains_pulldown;
-	case contains_pullup:
+	
+	if (state.group_contains_value < contains_pullup)
 		if (state.nodes_pullup.get (n))
 			state.group_contains_value = contains_pullup;
-	case contains_hi:
-	case contains_nothing:
+
+	if (state.group_contains_value < contains_hi)
 		if (state.nodes_value.get (n))
 			state.group_contains_value = contains_hi;
+#else
+	switch(state.group_contains_value)
+	{
+	case contains_nothing:	if (state.nodes_pulldown	.get (n)) inplace_max (state.group_contains_value, contains_pulldown);
+	case contains_hi:				if (state.nodes_pullup		.get (n))	inplace_max (state.group_contains_value, contains_pullup);
+	case contains_pullup:		if (state.nodes_value			.get (n))	inplace_max (state.group_contains_value, contains_hi);	
+	default:
+		break;
 	}
-*/
+#endif
 
 	/* revisit all transistors that control this node */
 	count_t end = state.nodes_c1c2offset [n + 1];
