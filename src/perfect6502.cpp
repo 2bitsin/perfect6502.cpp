@@ -3772,8 +3772,8 @@ recalculate_node (state_t& state, nodenum_t node)
 
 		state.nodes_value.set (node_index, new_value);
 
-		for (auto&& transistor : st_state.nodes_gates [node_index])
-			state.trans_state.set (transistor, new_value);
+		for (auto&& trans : st_state.nodes_gates [node_index])
+			state.trans_state.set (trans, new_value);
 
 		auto& dependant = new_value ? st_state.nodes_left_dependant [node_index] 
 																: st_state.nodes_dependant [node_index];
@@ -3828,7 +3828,7 @@ stabilize_chip (state_t& state)
  *
  ************************************************************/
 
-void
+void 
 set_node (state_t& state, nodenum_t nn, int s)
 {
 	state.nodes_pullup.set (nn, s);
@@ -3838,6 +3838,11 @@ set_node (state_t& state, nodenum_t nn, int s)
 	recalculate_node_list (state);
 }
 
+bool 
+get_node(state_t& state, nodenum_t nn)
+{
+	return state.nodes_value.get(nn);
+}
 
 /************************************************************
  *
@@ -4004,7 +4009,7 @@ void
 step (state_t* state)
 {
 	using namespace node_names;
-	int clk = state->nodes_value.get (clk0);
+	int clk = get_node(*state, clk0);
 
 	/* invert clock */
 	set_node (*state, clk0, !clk);

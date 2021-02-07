@@ -22,8 +22,6 @@ unsigned char readDataBus(struct state_t *state);
 unsigned char readIR(struct state_t *state);
 
 extern unsigned char memory[65536];
-extern unsigned int cycle;
-extern unsigned int transistors;
 
 #ifdef __cplusplus
 }
