@@ -42,22 +42,6 @@
 #include "perfect6502.hpp"
 #include "perfect6502_netlist.inl"
 
-typedef struct
-{
-	transnum_t transistor;
-	nodenum_t other_node;
-} c1c2_t;
-
-
-enum group_contains_value_t
-{
-	contains_nothing,
-	contains_hi,
-	contains_pullup,
-	contains_pulldown,
-	contains_vcc,
-	contains_vss
-};
 
 struct netlist_6502_static_state_type
 {
