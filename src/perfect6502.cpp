@@ -3577,16 +3577,11 @@ struct netlist_6502_static_state_type
 
 		count_t c1c2count [netlist_6502_node_count];
 
-		for (auto& list : nodes_gates)
-			list.clear ();
-		for (auto& list : nodes_dependant)
-			list.clear ();
-		for (auto& list : nodes_left_dependant)
-			list.clear ();
-		for (auto& node : nodes_c1c2offset)
-			node = 0;
-		for (auto& node : c1c2count)
-			node = 0;
+		for (auto& list : nodes_gates						)	list.clear ();
+		for (auto& list : nodes_dependant				)	list.clear ();
+		for (auto& list : nodes_left_dependant	)	list.clear ();
+		for (auto& node : nodes_c1c2offset			)	node = 0;
+		for (auto& node : c1c2count							) node = 0;
 				
 		for (auto&& i : range (0, netlist_6502_transistor_count))
 		{
@@ -3616,11 +3611,6 @@ struct netlist_6502_static_state_type
 			nodes_c1c2s [nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2_t{ node_index, c2 };
 			nodes_c1c2s [nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2_t{ node_index, c1 };
 		}
-
-		for (auto&& list : nodes_dependant)
-			list.clear ();
-		for (auto&& list : nodes_left_dependant)
-			list.clear ();
 
 		for (auto&& node_index : range (0, netlist_6502_node_count))
 		{
