@@ -242,27 +242,28 @@ namespace node_names
 	static inline constexpr auto dor7 = 158;
 
 	// Misc signals 
-	static inline constexpr auto cclk = 943;   // aka cp2
-	static inline constexpr auto clearIR = 1077;
+	static inline constexpr auto nmi = 1297;
+	static inline constexpr auto irq = 103;
+	static inline constexpr auto res = 159;
+	static inline constexpr auto rdy = 89;
+	static inline constexpr auto notRdy0 = 248;
+	static inline constexpr auto so = 1672;
+	static inline constexpr auto rw = 1156;
+	static inline constexpr auto sync_ = 539;
+
 	static inline constexpr auto clk0 = 1171;
 	static inline constexpr auto clk1out = 1163;
 	static inline constexpr auto clk2out = 421;
 	static inline constexpr auto clock1 = 156;
 	static inline constexpr auto clock2 = 1536;
+	static inline constexpr auto cclk = 943;   // aka cp2
 	static inline constexpr auto cp1 = 710;
+	static inline constexpr auto clearIR = 1077;
+
 	static inline constexpr auto D1x1 = 827;
 	static inline constexpr auto h1x1 = 1042; // drive status byte onto databus
-	static inline constexpr auto fetch = 879;
-	static inline constexpr auto irq = 103;
-	static inline constexpr auto nmi = 1297;
-	static inline constexpr auto notRdy0 = 248;
-	static inline constexpr auto rdy = 89;
-	static inline constexpr auto res = 159;
-	static inline constexpr auto rw = 1156;
-	static inline constexpr auto so = 1672;
-	static inline constexpr auto sync_ = 539;
-
 	// Timing signal
+	static inline constexpr auto fetch = 879;
 	static inline constexpr auto t2 = 971;
 	static inline constexpr auto t3 = 1567;
 	static inline constexpr auto t4 = 690;
@@ -3679,23 +3680,13 @@ initialize_state ()
 
 	state.nodes_pullup = netlist_6502_node_is_pullup;
 	state.nodes_pulldown.clear ();
-
 	state.nodes_value.clear ();
-
 	state.trans_state.clear ();
-
 	state.group.clear ();
-
-	state.in = 0;
-	state.out = 1;
 	state.list [0].clear ();
 	state.list [1].clear ();
-
-	/* all nodes are down */
-	state.nodes_value.clear ();
-
-	/* all transistors are off */
-	state.trans_state.clear ();
+	state.in = 0;
+	state.out = 1;
 
 	return &state;
 }
