@@ -3608,12 +3608,12 @@ struct netlist_6502_static_state_type
 		for (auto& node : c1c2count)
 			node = 0;
 
-		for (auto&& i : range (0, netlist_6502_transistor_count))
+		for (auto&& node_index : range<uint16_t> (0, netlist_6502_transistor_count))
 		{
-			nodenum_t c1 = netlist_6502_transdefs [i].c1;
-			nodenum_t c2 = netlist_6502_transdefs [i].c2;
-			nodes_c1c2s [nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2_t{ (transnum_t)i, c2 };
-			nodes_c1c2s [nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2_t{ (transnum_t)i, c1 };
+			nodenum_t c1 = netlist_6502_transdefs [node_index].c1;
+			nodenum_t c2 = netlist_6502_transdefs [node_index].c2;
+			nodes_c1c2s [nodes_c1c2offset [c1] + c1c2count [c1]++] = c1c2_t{ node_index, c2 };
+			nodes_c1c2s [nodes_c1c2offset [c2] + c1c2count [c2]++] = c1c2_t{ node_index, c1 };
 		}
 
 		for (auto&& list : nodes_dependant)

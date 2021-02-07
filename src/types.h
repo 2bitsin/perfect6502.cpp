@@ -9,9 +9,9 @@ typedef uint16_t transnum_t;
 typedef uint16_t count_t;
 
 typedef struct {
-	int gate;
-	int c1;
-	int c2;
+	uint16_t gate;
+	uint16_t c1;
+	uint16_t c2;
 } netlist_transdefs;
 
 
