@@ -43,8 +43,7 @@
 
 namespace node_names
 {
-	static inline constexpr auto D1x1 = 827;
-
+	// A register
 	static inline constexpr auto a0 = 737;
 	static inline constexpr auto a1 = 1234;
 	static inline constexpr auto a2 = 978;
@@ -53,6 +52,88 @@ namespace node_names
 	static inline constexpr auto a5 = 858;
 	static inline constexpr auto a6 = 1136;
 	static inline constexpr auto a7 = 1653;
+
+	// X register
+	static inline constexpr auto x0 = 1216;
+	static inline constexpr auto x1 = 98;
+	static inline constexpr auto x2 = 1;
+	static inline constexpr auto x3 = 1648;
+	static inline constexpr auto x4 = 85;
+	static inline constexpr auto x5 = 589;
+	static inline constexpr auto x6 = 448;
+	static inline constexpr auto x7 = 777;
+
+	// Y register
+	static inline constexpr auto y0 = 64;
+	static inline constexpr auto y1 = 1148;
+	static inline constexpr auto y2 = 573;
+	static inline constexpr auto y3 = 305;
+	static inline constexpr auto y4 = 989;
+	static inline constexpr auto y5 = 615;
+	static inline constexpr auto y6 = 115;
+	static inline constexpr auto y7 = 843;
+
+	// P register (status)
+	static inline constexpr auto p0 = 687;
+	static inline constexpr auto p1 = 1444;
+	static inline constexpr auto p2 = 1421;
+	static inline constexpr auto p3 = 439;
+	static inline constexpr auto p4 = 1119;
+	static inline constexpr auto p5 = 0;
+	static inline constexpr auto p6 = 77;
+	static inline constexpr auto p7 = 1370;
+
+	// S register (stack)
+	static inline constexpr auto s0 = 1403;
+	static inline constexpr auto s1 = 183;
+	static inline constexpr auto s2 = 81;
+	static inline constexpr auto s3 = 1532;
+	static inline constexpr auto s4 = 1702;
+	static inline constexpr auto s5 = 1098;
+	static inline constexpr auto s6 = 1212;
+	static inline constexpr auto s7 = 1435;
+
+	// !S register (!stack)
+	static inline constexpr auto nots0 = 418;
+	static inline constexpr auto nots1 = 1064;
+	static inline constexpr auto nots2 = 752;
+	static inline constexpr auto nots3 = 828;
+	static inline constexpr auto nots4 = 1603;
+	static inline constexpr auto nots5 = 601;
+	static inline constexpr auto nots6 = 1029;
+	static inline constexpr auto nots7 = 181;
+
+	// PC.H register
+	static inline constexpr auto pch0 = 1670;
+	static inline constexpr auto pch1 = 292;
+	static inline constexpr auto pch2 = 502;
+	static inline constexpr auto pch3 = 584;
+	static inline constexpr auto pch4 = 948;
+	static inline constexpr auto pch5 = 49;
+	static inline constexpr auto pch6 = 1551;
+	static inline constexpr auto pch7 = 205;
+
+	// PC.L register
+	static inline constexpr auto pcl0 = 1139;
+	static inline constexpr auto pcl1 = 1022;
+	static inline constexpr auto pcl2 = 655;
+	static inline constexpr auto pcl3 = 1359;
+	static inline constexpr auto pcl4 = 900;
+	static inline constexpr auto pcl5 = 622;
+	static inline constexpr auto pcl6 = 377;
+	static inline constexpr auto pcl7 = 1611;
+
+	// !IR (instruction register)
+	static inline constexpr auto notir0 = 194;
+	static inline constexpr auto notir1 = 702;
+	static inline constexpr auto notir2 = 1182;
+	static inline constexpr auto notir3 = 1125;
+	static inline constexpr auto notir4 = 26;
+	static inline constexpr auto notir5 = 1394;
+	static inline constexpr auto notir6 = 895;
+	static inline constexpr auto notir7 = 1320;
+
+	// Address Bus 
 	static inline constexpr auto ab0 = 268;
 	static inline constexpr auto ab1 = 451;
 	static inline constexpr auto ab2 = 1340;
@@ -70,41 +151,7 @@ namespace node_names
 	static inline constexpr auto ab14 = 672;
 	static inline constexpr auto ab15 = 195;
 
-	static inline constexpr auto adh0 = 407;
-	static inline constexpr auto adh1 = 52;
-	static inline constexpr auto adh2 = 1651;
-	static inline constexpr auto adh3 = 315;
-	static inline constexpr auto adh4 = 1160;
-	static inline constexpr auto adh5 = 483;
-	static inline constexpr auto adh6 = 13;
-	static inline constexpr auto adh7 = 1539;
-	static inline constexpr auto adl0 = 413;
-	static inline constexpr auto adl1 = 1282;
-	static inline constexpr auto adl2 = 1242;
-	static inline constexpr auto adl3 = 684;
-	static inline constexpr auto adl4 = 1437;
-	static inline constexpr auto adl5 = 1630;
-	static inline constexpr auto adl6 = 121;
-	static inline constexpr auto adl7 = 1299;
-
-	static inline constexpr auto alu0 = 394;
-	static inline constexpr auto alu1 = 697;
-	static inline constexpr auto alu2 = 276;
-	static inline constexpr auto alu3 = 495;
-	static inline constexpr auto alu4 = 1490;
-	static inline constexpr auto alu5 = 893;
-	static inline constexpr auto alu6 = 68;
-	static inline constexpr auto alu7 = 1123;
-
-	static inline constexpr auto cclk = 943;   // aka cp2
-	static inline constexpr auto clearIR = 1077;
-	static inline constexpr auto clk0 = 1171;
-	static inline constexpr auto clk1out = 1163;
-	static inline constexpr auto clk2out = 421;
-	static inline constexpr auto clock1 = 156;
-	static inline constexpr auto clock2 = 1536;
-	static inline constexpr auto cp1 = 710;
-
+	// Data Bus 
 	static inline constexpr auto db0 = 1005;
 	static inline constexpr auto db1 = 82;
 	static inline constexpr auto db2 = 945;
@@ -114,84 +161,37 @@ namespace node_names
 	static inline constexpr auto db6 = 1591;
 	static inline constexpr auto db7 = 1349;
 
-	static inline constexpr auto dor0 = 222;
-	static inline constexpr auto dor1 = 527;
-	static inline constexpr auto dor2 = 1288;
-	static inline constexpr auto dor3 = 823;
-	static inline constexpr auto dor4 = 873;
-	static inline constexpr auto dor5 = 1266;
-	static inline constexpr auto dor6 = 1418;
-	static inline constexpr auto dor7 = 158;
+	// AD.L Register
+	static inline constexpr auto adh0 = 407;
+	static inline constexpr auto adh1 = 52;
+	static inline constexpr auto adh2 = 1651;
+	static inline constexpr auto adh3 = 315;
+	static inline constexpr auto adh4 = 1160;
+	static inline constexpr auto adh5 = 483;
+	static inline constexpr auto adh6 = 13;
+	static inline constexpr auto adh7 = 1539;
 
-	static inline constexpr auto fetch = 879;
+	// AD.H Register
+	static inline constexpr auto adl0 = 413;
+	static inline constexpr auto adl1 = 1282;
+	static inline constexpr auto adl2 = 1242;
+	static inline constexpr auto adl3 = 684;
+	static inline constexpr auto adl4 = 1437;
+	static inline constexpr auto adl5 = 1630;
+	static inline constexpr auto adl6 = 121;
+	static inline constexpr auto adl7 = 1299;
 
-	static inline constexpr auto h1x1 = 1042; // drive status byte onto databus
+	// ALU Bus?
+	static inline constexpr auto alu0 = 394;
+	static inline constexpr auto alu1 = 697;
+	static inline constexpr auto alu2 = 276;
+	static inline constexpr auto alu3 = 495;
+	static inline constexpr auto alu4 = 1490;
+	static inline constexpr auto alu5 = 893;
+	static inline constexpr auto alu6 = 68;
+	static inline constexpr auto alu7 = 1123;
 
-	static inline constexpr auto idb0 = 1108;
-	static inline constexpr auto idb1 = 991;
-	static inline constexpr auto idb2 = 1473;
-	static inline constexpr auto idb3 = 1302;
-	static inline constexpr auto idb4 = 892;
-	static inline constexpr auto idb5 = 1503;
-	static inline constexpr auto idb6 = 833;
-	static inline constexpr auto idb7 = 493;
-	static inline constexpr auto idl0 = 116;
-	static inline constexpr auto idl1 = 576;
-	static inline constexpr auto idl2 = 1485;
-	static inline constexpr auto idl3 = 1284;
-	static inline constexpr auto idl4 = 1516;
-	static inline constexpr auto idl5 = 498;
-	static inline constexpr auto idl6 = 1537;
-	static inline constexpr auto idl7 = 529;
-
-	static inline constexpr auto irq = 103;
-	static inline constexpr auto nmi = 1297;
-	static inline constexpr auto notRdy0 = 248;
-
-	static inline constexpr auto notir0 = 194;
-	static inline constexpr auto notir1 = 702;
-	static inline constexpr auto notir2 = 1182;
-	static inline constexpr auto notir3 = 1125;
-	static inline constexpr auto notir4 = 26;
-	static inline constexpr auto notir5 = 1394;
-	static inline constexpr auto notir6 = 895;
-	static inline constexpr auto notir7 = 1320;
-
-	static inline constexpr auto nots0 = 418;
-	static inline constexpr auto nots1 = 1064;
-	static inline constexpr auto nots2 = 752;
-	static inline constexpr auto nots3 = 828;
-	static inline constexpr auto nots4 = 1603;
-	static inline constexpr auto nots5 = 601;
-	static inline constexpr auto nots6 = 1029;
-	static inline constexpr auto nots7 = 181;
-
-	static inline constexpr auto p0 = 687;
-	static inline constexpr auto p1 = 1444;
-	static inline constexpr auto p2 = 1421;
-	static inline constexpr auto p3 = 439;
-	static inline constexpr auto p4 = 1119;
-	static inline constexpr auto p5 = 0;
-	static inline constexpr auto p6 = 77;
-	static inline constexpr auto p7 = 1370;
-
-	static inline constexpr auto pch0 = 1670;
-	static inline constexpr auto pch1 = 292;
-	static inline constexpr auto pch2 = 502;
-	static inline constexpr auto pch3 = 584;
-	static inline constexpr auto pch4 = 948;
-	static inline constexpr auto pch5 = 49;
-	static inline constexpr auto pch6 = 1551;
-	static inline constexpr auto pch7 = 205;
-	static inline constexpr auto pcl0 = 1139;
-	static inline constexpr auto pcl1 = 1022;
-	static inline constexpr auto pcl2 = 655;
-	static inline constexpr auto pcl3 = 1359;
-	static inline constexpr auto pcl4 = 900;
-	static inline constexpr auto pcl5 = 622;
-	static inline constexpr auto pcl6 = 377;
-	static inline constexpr auto pcl7 = 1611;
-
+	// PD ???
 	static inline constexpr auto pd0 = 758;
 	static inline constexpr auto pd1 = 361;
 	static inline constexpr auto pd2 = 955;
@@ -201,18 +201,7 @@ namespace node_names
 	static inline constexpr auto pd6 = 1669;
 	static inline constexpr auto pd7 = 1690;
 
-	static inline constexpr auto rdy = 89;
-	static inline constexpr auto res = 159;
-	static inline constexpr auto rw = 1156;
-
-	static inline constexpr auto s0 = 1403;
-	static inline constexpr auto s1 = 183;
-	static inline constexpr auto s2 = 81;
-	static inline constexpr auto s3 = 1532;
-	static inline constexpr auto s4 = 1702;
-	static inline constexpr auto s5 = 1098;
-	static inline constexpr auto s6 = 1212;
-	static inline constexpr auto s7 = 1435;
+	// SB ???
 	static inline constexpr auto sb0 = 54;
 	static inline constexpr auto sb1 = 1150;
 	static inline constexpr auto sb2 = 1287;
@@ -221,30 +210,67 @@ namespace node_names
 	static inline constexpr auto sb5 = 166;
 	static inline constexpr auto sb6 = 1336;
 	static inline constexpr auto sb7 = 1001;
+
+	// Internal Data Bus?
+	static inline constexpr auto idb0 = 1108;
+	static inline constexpr auto idb1 = 991;
+	static inline constexpr auto idb2 = 1473;
+	static inline constexpr auto idb3 = 1302;
+	static inline constexpr auto idb4 = 892;
+	static inline constexpr auto idb5 = 1503;
+	static inline constexpr auto idb6 = 833;
+	static inline constexpr auto idb7 = 493;
+
+	// Internal Data L???? ?
+	static inline constexpr auto idl0 = 116;
+	static inline constexpr auto idl1 = 576;
+	static inline constexpr auto idl2 = 1485;
+	static inline constexpr auto idl3 = 1284;
+	static inline constexpr auto idl4 = 1516;
+	static inline constexpr auto idl5 = 498;
+	static inline constexpr auto idl6 = 1537;
+	static inline constexpr auto idl7 = 529;
+
+	// DOR ?
+	static inline constexpr auto dor0 = 222;
+	static inline constexpr auto dor1 = 527;
+	static inline constexpr auto dor2 = 1288;
+	static inline constexpr auto dor3 = 823;
+	static inline constexpr auto dor4 = 873;
+	static inline constexpr auto dor5 = 1266;
+	static inline constexpr auto dor6 = 1418;
+	static inline constexpr auto dor7 = 158;
+
+	// Misc signals 
+	static inline constexpr auto cclk = 943;   // aka cp2
+	static inline constexpr auto clearIR = 1077;
+	static inline constexpr auto clk0 = 1171;
+	static inline constexpr auto clk1out = 1163;
+	static inline constexpr auto clk2out = 421;
+	static inline constexpr auto clock1 = 156;
+	static inline constexpr auto clock2 = 1536;
+	static inline constexpr auto cp1 = 710;
+	static inline constexpr auto D1x1 = 827;
+	static inline constexpr auto h1x1 = 1042; // drive status byte onto databus
+	static inline constexpr auto fetch = 879;
+	static inline constexpr auto irq = 103;
+	static inline constexpr auto nmi = 1297;
+	static inline constexpr auto notRdy0 = 248;
+	static inline constexpr auto rdy = 89;
+	static inline constexpr auto res = 159;
+	static inline constexpr auto rw = 1156;
 	static inline constexpr auto so = 1672;
 	static inline constexpr auto sync_ = 539;
+
+	// Timing signal
 	static inline constexpr auto t2 = 971;
 	static inline constexpr auto t3 = 1567;
 	static inline constexpr auto t4 = 690;
 	static inline constexpr auto t5 = 909;
+
+	// Power
 	static inline constexpr auto vcc = 657;
 	static inline constexpr auto vss = 558;
-	static inline constexpr auto x0 = 1216;
-	static inline constexpr auto x1 = 98;
-	static inline constexpr auto x2 = 1;
-	static inline constexpr auto x3 = 1648;
-	static inline constexpr auto x4 = 85;
-	static inline constexpr auto x5 = 589;
-	static inline constexpr auto x6 = 448;
-	static inline constexpr auto x7 = 777;
-	static inline constexpr auto y0 = 64;
-	static inline constexpr auto y1 = 1148;
-	static inline constexpr auto y2 = 573;
-	static inline constexpr auto y3 = 305;
-	static inline constexpr auto y4 = 989;
-	static inline constexpr auto y5 = 615;
-	static inline constexpr auto y6 = 115;
-	static inline constexpr auto y7 = 843;
 
 }
 
