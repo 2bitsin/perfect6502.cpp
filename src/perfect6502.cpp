@@ -3670,7 +3670,7 @@ struct state_t
 state_t G_6502_state;
 
 state_t*
-setupNodesAndTransistors ()
+initialize_state ()
 {
 	using namespace node_names;
 
@@ -3700,8 +3700,7 @@ setupNodesAndTransistors ()
 }
 
 
-static inline void
-addNodeToGroup (state_t& state, nodenum_t n)
+static inline void group_add_node (state_t& state, nodenum_t n)
 {
 	/*
 	 * We need to stop at vss and vcc, otherwise we'll revisit other groups
@@ -3741,26 +3740,26 @@ addNodeToGroup (state_t& state, nodenum_t n)
 		auto c = st_state.nodes_c1c2s [transistor];
 		/* if the transistor connects c1 and c2... */
 		if (state.transistors_on.get (c.transistor))
-			addNodeToGroup (state, c.other_node);
+			group_add_node (state, c.other_node);
 	}
 }
 
 static inline void
-addAllNodesToGroup (state_t& state, nodenum_t node)
+group_add_all_nodes (state_t& state, nodenum_t node)
 {
 	state.group.clear ();
 	state.group_contains_value = contains_nothing;
-	addNodeToGroup (state, node);
+	group_add_node (state, node);
 }
 
 static inline void
-recalcNode (state_t& state, nodenum_t node)
+recalculate_node (state_t& state, nodenum_t node)
 {
 	/*
 	 * get all nodes that are connected through
 	 * transistors, starting with this one
 	 */
-	addAllNodesToGroup (state, node);
+	group_add_all_nodes (state, node);
 
 	/* get the state of the group */
 
@@ -3793,7 +3792,7 @@ recalcNode (state_t& state, nodenum_t node)
 }
 
 void
-recalcNodeList (state_t& state)
+recalculate_node_list (state_t& state)
 {
 	for (int j = 0; j < 20; j++)
 	{	/* loop limiter */
@@ -3816,19 +3815,19 @@ recalcNodeList (state_t& state)
 		 * all nodes that changed because of it for the next run
 		 */
 		for (auto&& node : state.list [state.in])
-			recalcNode (state, node);
+			recalculate_node (state, node);
 	}
 	state.list [state.out].clear ();
 }
 
 
 void
-stabilizeChip (state_t& state)
+stabilize_chip (state_t& state)
 {
 	for (count_t i = 0; i < netlist_6502_node_count; i++)
 		state.list [state.out].insert (i);
 
-	recalcNodeList (state);
+	recalculate_node_list (state);
 }
 
 /************************************************************
@@ -3838,13 +3837,13 @@ stabilizeChip (state_t& state)
  ************************************************************/
 
 void
-setNode (state_t& state, nodenum_t nn, int s)
+set_node (state_t& state, nodenum_t nn, int s)
 {
 	state.nodes_pullup.set (nn, s);
 	state.nodes_pulldown.set (nn, !s);
 	state.list [state.out].insert (nn);
 
-	recalcNodeList (state);
+	recalculate_node_list (state);
 }
 
 
@@ -3855,7 +3854,7 @@ setNode (state_t& state, nodenum_t nn, int s)
  ************************************************************/
 
 unsigned int
-readNodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
+read_nodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 {
 	int result = 0;
 	for (long long i = nodelist.size () - 1; i >= 0; i--)
@@ -3868,10 +3867,10 @@ readNodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 
 
 void
-writeNodes (state_t& state, int v, std::initializer_list<nodenum_t> nodelist)
+write_nodes (state_t& state, int v, std::initializer_list<nodenum_t> nodelist)
 {
 	for (auto i = 0u; i < nodelist.size (); i++, v >>= 1)
-		setNode (state, *(nodelist.begin () + i), v & 1);
+		set_node (state, *(nodelist.begin () + i), v & 1);
 }
 
 /************************************************************
@@ -3884,21 +3883,21 @@ uint16_t
 readAddressBus (state_t* state)
 {
 	using namespace node_names;
-	return (uint16_t)readNodes (state, { ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15 });
+	return (uint16_t)read_nodes (state, { ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15 });
 }
 
 uint8_t
 readDataBus (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)readNodes (state, { db0, db1, db2, db3, db4, db5, db6, db7 });
+	return (uint8_t)read_nodes (state, { db0, db1, db2, db3, db4, db5, db6, db7 });
 }
 
 void
 writeDataBus (state_t* state, uint8_t d)
 {
 	using namespace node_names;
-	writeNodes (*state, d, { db0, db1, db2, db3, db4, db5, db6, db7 });
+	write_nodes (*state, d, { db0, db1, db2, db3, db4, db5, db6, db7 });
 }
 
 unsigned int
@@ -3912,35 +3911,35 @@ uint8_t
 readA (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)readNodes (state, { a0, a1, a2, a3, a4, a5, a6, a7 });
+	return (uint8_t)read_nodes (state, { a0, a1, a2, a3, a4, a5, a6, a7 });
 }
 
 uint8_t
 readX (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)readNodes (state, { x0, x1, x2, x3, x4, x5, x6, x7 });
+	return (uint8_t)read_nodes (state, { x0, x1, x2, x3, x4, x5, x6, x7 });
 }
 
 uint8_t
 readY (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)readNodes (state, { y0, y1, y2, y3, y4, y5, y6, y7 });
+	return (uint8_t)read_nodes (state, { y0, y1, y2, y3, y4, y5, y6, y7 });
 }
 
 uint8_t
 readP (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)readNodes (state, { p0, p1, p2, p3, p4, p5, p6, p7 });
+	return (uint8_t)read_nodes (state, { p0, p1, p2, p3, p4, p5, p6, p7 });
 }
 
 uint8_t
 readIR (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)readNodes (state, { notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7 }) ^ 0xFF;
+	return (uint8_t)read_nodes (state, { notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7 }) ^ 0xFF;
 
 }
 
@@ -3948,21 +3947,21 @@ uint8_t
 readSP (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)readNodes (state, { s0, s1, s2, s3, s4, s5, s6, s7 });
+	return (uint8_t)read_nodes (state, { s0, s1, s2, s3, s4, s5, s6, s7 });
 }
 
 uint8_t
 readPCL (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)readNodes (state, { pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7 });
+	return (uint8_t)read_nodes (state, { pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7 });
 }
 
 uint8_t
 readPCH (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)readNodes (state, { pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7 });
+	return (uint8_t)read_nodes (state, { pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7 });
 }
 
 uint16_t
@@ -4016,8 +4015,8 @@ step (state_t* state)
 	int clk = state->nodes_value.get (clk0);
 
 	/* invert clock */
-	setNode (*state, clk0, !clk);
-	recalcNodeList (*state);
+	set_node (*state, clk0, !clk);
+	recalculate_node_list (*state);
 
 	/* handle memory reads and writes */
 	if (!clk)
@@ -4032,24 +4031,24 @@ struct state_t*
 {
 	using namespace node_names;
 	/* set up data structures for efficient emulation */
-	state_t* state = setupNodesAndTransistors ();
+	state_t* state = initialize_state ();
 
-	setNode (*state, res, 0);
-	setNode (*state, clk0, 1);
-	setNode (*state, rdy, 1);
-	setNode (*state, so, 0);
-	setNode (*state, irq, 1);
-	setNode (*state, nmi, 1);
+	set_node (*state, res, 0);
+	set_node (*state, clk0, 1);
+	set_node (*state, rdy, 1);
+	set_node (*state, so, 0);
+	set_node (*state, irq, 1);
+	set_node (*state, nmi, 1);
 
-	stabilizeChip (*state);
+	stabilize_chip (*state);
 
 	/* hold RESET for 8 cycles */
 	for (int i = 0; i < 16; i++)
 		step (state);
 
 	/* release RESET */
-	setNode (*state, res, 1);
-	recalcNodeList (*state);
+	set_node (*state, res, 1);
+	recalculate_node_list (*state);
 
 	cycle = 0;
 
