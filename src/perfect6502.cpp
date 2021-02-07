@@ -3657,7 +3657,7 @@ struct state_t
 	bitmap<netlist_6502_node_count>	nodes_pulldown;
 	bitmap<netlist_6502_node_count>	nodes_value;
 
-	bitmap<netlist_6502_transistor_count>	transistors_on;
+	bitmap<netlist_6502_transistor_count>	trans_state;
 
 	array_set<nodenum_t, netlist_6502_node_count> group;
 	group_contains_value_t group_contains_value;
@@ -3679,9 +3679,10 @@ initialize_state ()
 
 	state.nodes_pullup = netlist_6502_node_is_pullup;
 	state.nodes_pulldown.clear ();
+
 	state.nodes_value.clear ();
 
-	state.transistors_on.clear ();
+	state.trans_state.clear ();
 
 	state.group.clear ();
 
@@ -3694,7 +3695,7 @@ initialize_state ()
 	state.nodes_value.clear ();
 
 	/* all transistors are off */
-	state.transistors_on.clear ();
+	state.trans_state.clear ();
 
 	return &state;
 }
@@ -3739,7 +3740,7 @@ static inline void group_add_node (state_t& state, nodenum_t n)
 	{
 		auto c = st_state.nodes_c1c2s [transistor];
 		/* if the transistor connects c1 and c2... */
-		if (state.transistors_on.get (c.transistor))
+		if (state.trans_state.get (c.transistor))
 			group_add_node (state, c.other_node);
 	}
 }
@@ -3781,7 +3782,7 @@ recalculate_node (state_t& state, nodenum_t node)
 		state.nodes_value.set (node_index, new_value);
 
 		for (auto&& transistor : st_state.nodes_gates [node_index])
-			state.transistors_on.set (transistor, new_value);
+			state.trans_state.set (transistor, new_value);
 
 		auto& dependant = new_value ? st_state.nodes_left_dependant [node_index] 
 																: st_state.nodes_dependant [node_index];
@@ -3794,7 +3795,7 @@ recalculate_node (state_t& state, nodenum_t node)
 void
 recalculate_node_list (state_t& state)
 {
-	for (int j = 0; j < 20; j++)
+	for (auto j : range(0, 20))
 	{	/* loop limiter */
 /*
  * make the secondary list our primary list, use
