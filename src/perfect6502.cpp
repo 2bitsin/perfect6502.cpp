@@ -132,16 +132,11 @@ struct state_t
 };
 
 
-state_t G_6502_state;
-
-state_t*
-initialize_state ()
+void initialize_state (state_t& state)
 {
 	using namespace node_names;
 
 	/* allocate state */
-	state_t& state = G_6502_state;
-
 	state.nodes_pullup = netlist_6502_node_is_pullup;
 	state.nodes_pulldown.clear ();
 	state.nodes_value.clear ();
@@ -151,8 +146,6 @@ initialize_state ()
 	state.list [1].clear ();
 	state.in = 0;
 	state.out = 1;
-
-	return &state;
 }
 
 
@@ -250,13 +243,14 @@ recalculate_node (state_t& state, nodenum_t node)
 void
 recalculate_node_list (state_t& state)
 {
+	/* loop limiter */
 	for (auto j : range(0, 20))
-	{	/* loop limiter */
-/*
- * make the secondary list our primary list, use
- * the data storage of the primary list as the
- * secondary list
- */
+	{			
+		/*
+		 * make the secondary list our primary list, use
+		 * the data storage of the primary list as the
+		 * secondary list
+		 */
 		std::swap (state.in, state.out);
 
 		if (state.list [state.in].empty ())
@@ -280,8 +274,8 @@ recalculate_node_list (state_t& state)
 void
 stabilize_chip (state_t& state)
 {
-	for (count_t i = 0; i < netlist_6502_node_count; i++)
-		state.list [state.out].insert (i);
+	for (auto index: range(0, netlist_6502_node_count))
+		state.list [state.out].insert (index);
 
 	recalculate_node_list (state);
 }
@@ -492,7 +486,9 @@ struct state_t*
 {
 	using namespace node_names;
 	/* set up data structures for efficient emulation */
-	state_t* state = initialize_state ();
+	state_t* state = new state_t { };
+		
+	initialize_state (*state);
 
 	set_node (*state, res, 0);
 	set_node (*state, clk0, 1);
@@ -515,44 +511,5 @@ struct state_t*
 
 	return state;
 }
-
-/************************************************************
- *
- * Tracing/Debugging
- *
- ************************************************************/
-
-void
-chipStatus (state_t* state)
-{
-	int clk = state->nodes_value.get (clk0);
-	uint16_t a = readAddressBus (state);
-	uint8_t d = readDataBus (state);
-	int r_w = state->nodes_value.get (rw);
-
-	printf ("halfcyc:%d phi0:%d AB:%04X D:%02X RnW:%d PC:%04X A:%02X X:%02X Y:%02X SP:%02X P:%02X IR:%02X",
-		cycle,
-		clk,
-		a,
-		d,
-		r_w,
-		readPC (state),
-		readA (state),
-		readX (state),
-		readY (state),
-		readSP (state),
-		readP (state),
-		readIR (state));
-
-	if (clk)
-	{
-		if (r_w)
-			printf (" R$%04X=$%02X", a, memory [a]);
-		else
-			printf (" W$%04X=$%02X", a, d);
-	}
-	printf ("\n");
-}
-
 
 
