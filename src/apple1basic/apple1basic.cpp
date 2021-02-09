@@ -78,32 +78,34 @@ charout(struct state_t* state, char ch) {
 }
 
 void
-handle_monitor(struct state_t* state)
+handle_monitor(netlist_6502& nlsfo2)
 {
+	 struct state_t* state = nlsfo2.state.get();
+
 	if (readRW(state)) {
-		unsigned short a = readAddressBus(state);
+		unsigned short a = nlsfo2.get(nlsfo2.bus_addr);
 		if ((a & 0xFF1F) == 0xD010) {
 			unsigned char c = getchar();
 			if (c == 10)
 				c = 13;
 			c |= 0x80;
-			writeDataBus(state, c);
+			nlsfo2.set(nlsfo2.bus_data, c);
 		}
 		if ((a & 0xFF1F) == 0xD011) {
 			if (readPC(state) == 0xE006)
 				/* if the code is reading a character, we have one ready */
-				writeDataBus(state, 0x80);
+				nlsfo2.set(nlsfo2.bus_data, 0x80);
 			else
 				/* if the code checks for a STOP condition, nothing is pressed */
-				writeDataBus(state, 0);
+				nlsfo2.set(nlsfo2.bus_data, 0);
 		}
 		if ((a & 0xFF1F) == 0xD012) {
 			/* 0x80 would mean we're not yet ready to receive a character */
-			writeDataBus(state, 0);
+			nlsfo2.set(nlsfo2.bus_data, 0);
 		}
 	} else {
-		unsigned short a = readAddressBus(state);
-		unsigned char d = readDataBus(state);
+		unsigned short a = nlsfo2.get(nlsfo2.bus_addr);
+		unsigned char d = nlsfo2.get(nlsfo2.bus_data);
 		if ((a & 0xFF1F) == 0xD012) {
 			unsigned char temp8 = d & 0x7F;
 			if (temp8 == 13)
@@ -128,7 +130,7 @@ main()
 		nlso2.step();
 		clk = !clk;
 		if (!clk)
-			handle_monitor(nlso2.state.get());
+			handle_monitor(nlso2);
 
 		//chipStatus(state);
 		//if (!(cycle % 1000)) printf("%d\n", cycle);

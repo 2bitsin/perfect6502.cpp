@@ -40,8 +40,5 @@ unsigned char readY(struct state_t *state);
 unsigned char readSP(struct state_t *state);
 unsigned char readP(struct state_t *state);
 unsigned int readRW(struct state_t *state);
-unsigned short readAddressBus(struct state_t *state);
-void writeDataBus(struct state_t *state, unsigned char);
-unsigned char readDataBus(struct state_t *state);
 unsigned char readIR(struct state_t *state);
 

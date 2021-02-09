@@ -341,27 +341,6 @@ auto read_nodes (state_t& state) -> _Value
 }
 
 
-uint16_t
-readAddressBus (state_t* state)
-{
-	using namespace node_names;
-	return read_nodes<uint16_t, ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15> (*state);	
-}
-
-uint8_t
-readDataBus (state_t* state)
-{
-	using namespace node_names;
-	return read_nodes<uint8_t, db0, db1, db2, db3, db4, db5, db6, db7>(*state);
-}
-
-void
-writeDataBus (state_t* state, uint8_t d)
-{
-	using namespace node_names;
-	write_nodes<db0, db1, db2, db3, db4, db5, db6, db7>(*state, d);
-}
-
 unsigned int
 readRW (state_t* state)
 {
