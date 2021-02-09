@@ -1,12 +1,14 @@
+#include <memory>
 
-struct state_t;
+struct netlist_6502
+{
+	netlist_6502();
+	~netlist_6502();
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+	std::unique_ptr<struct state_t> state;
+};
 
-struct state_t *initAndResetChip();
-void destroyChip(struct state_t *state);
+
 void step(struct state_t *state);
 void chipStatus(struct state_t *state);
 unsigned short readPC(struct state_t *state);
@@ -22,7 +24,3 @@ unsigned char readDataBus(struct state_t *state);
 unsigned char readIR(struct state_t *state);
 
 extern unsigned char memory[65536];
-
-#ifdef __cplusplus
-}
-#endif

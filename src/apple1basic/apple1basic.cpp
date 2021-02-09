@@ -114,17 +114,17 @@ main()
 {
 	int clk = 0;
 
-	struct state_t* state = initAndResetChip();
+	netlist_6502 nlso2;
 
 	/* set up memory for user program */
 	init_monitor();
 
 	/* emulate the 6502! */
 	for (;;) {
-		step(state);
+		step(nlso2.state.get());
 		clk = !clk;
 		if (!clk)
-			handle_monitor(state);
+			handle_monitor(nlso2.state.get());
 
 		//chipStatus(state);
 		//if (!(cycle % 1000)) printf("%d\n", cycle);

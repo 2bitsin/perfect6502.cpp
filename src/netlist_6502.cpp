@@ -481,12 +481,10 @@ step (state_t* state)
 }
 
 using namespace node_names;
-struct state_t*
-	initAndResetChip ()
+void initAndResetChip (struct state_t* state)
 {
 	using namespace node_names;
 	/* set up data structures for efficient emulation */
-	state_t* state = new state_t { };
 		
 	initialize_state (*state);
 
@@ -508,8 +506,13 @@ struct state_t*
 	recalculate_node_list (*state);
 
 	cycle = 0;
-
-	return state;
 }
 
+netlist_6502::netlist_6502 ()
+:	state { std::make_unique<state_t>() }
+{ 
+	initAndResetChip(state.get()); 
+}
 
+netlist_6502::~netlist_6502 ()
+{ }
