@@ -104,8 +104,8 @@ handle_monitor(netlist_6502& nlsfo2)
 			nlsfo2.set(nlsfo2.bus_data, 0);
 		}
 	} else {
-		unsigned short a = nlsfo2.get(nlsfo2.bus_addr);
-		unsigned char d = nlsfo2.get(nlsfo2.bus_data);
+		auto a = nlsfo2.get(nlsfo2.bus_addr);
+		auto d = (uint8_t)nlsfo2.get(nlsfo2.bus_data);
 		if ((a & 0xFF1F) == 0xD012) {
 			unsigned char temp8 = d & 0x7F;
 			if (temp8 == 13)

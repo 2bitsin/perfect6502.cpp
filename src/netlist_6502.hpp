@@ -17,8 +17,11 @@ struct netlist_6502
 		bus_data,
 		bus_irq,
 		bus_nmi,
-		bus_res,
-		bus_rw
+		bus_reset,
+		bus_rw,
+		bus_sync,
+		bus_ready,
+		bus_clock
 	};
 
 	netlist_6502();

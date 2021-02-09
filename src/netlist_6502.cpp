@@ -46,6 +46,13 @@
 
 struct netlist_6502_static_state_type
 {
+	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
+	c1c2_t nodes_c1c2s [netlist_6502_transistor_count * 2];
+
+	array_list<nodenum_t, netlist_6502_node_count> nodes_gates [netlist_6502_node_count];
+	array_set<nodenum_t, netlist_6502_node_count> nodes_dependant [netlist_6502_node_count];
+	array_set<nodenum_t, netlist_6502_node_count> nodes_left_dependant [netlist_6502_node_count];
+
 	constexpr netlist_6502_static_state_type ()
 	{
 		using namespace node_names;
@@ -104,14 +111,6 @@ struct netlist_6502_static_state_type
 			}
 		}
 	}
-
-	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
-	c1c2_t nodes_c1c2s [netlist_6502_transistor_count * 2];
-
-	array_list<nodenum_t, netlist_6502_node_count> nodes_gates [netlist_6502_node_count];
-	array_set<nodenum_t, netlist_6502_node_count> nodes_dependant [netlist_6502_node_count];
-	array_set<nodenum_t, netlist_6502_node_count> nodes_left_dependant [netlist_6502_node_count];
-
 };
 
 static constexpr inline netlist_6502_static_state_type st_state;
@@ -479,6 +478,38 @@ auto netlist_6502::get (bits _bits) const -> uint16_t
 		return read_nodes<uint16_t, ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state);
 	case bits::bus_data:
 		return read_nodes<uint8_t, db0, db1, db2, db3, db4, db5, db6, db7>(*state);
+	case bits::bus_nmi:
+		return read_nodes<uint8_t, nmi>(*state);
+	case bits::bus_reset:
+		return read_nodes<uint8_t, res>(*state);
+	case bits::bus_irq:
+		return read_nodes<uint8_t, irq>(*state);
+	case bits::bus_rw:
+		return read_nodes<uint8_t, rw>(*state);
+	case bits::bus_sync:
+		return read_nodes<uint8_t, rw>(*state);
+	case bits::bus_clock:
+		return read_nodes<uint8_t, rw>(*state);
+	case bits::bus_ready:
+		return read_nodes<uint8_t, rw>(*state);
+	case bits::reg_a:	
+		return read_nodes<uint8_t, a0, a1, a2, a3, a4, a5, a6, a7>(*state);
+	case bits::reg_x:
+		return read_nodes<uint8_t, x0, x1, x2, x3, x4, x5, x6, x7>(*state);
+	case bits::reg_y:
+		return read_nodes<uint8_t, y0, y1, y2, y3, y4, y5, y6, y7>(*state);
+	case bits::reg_s:
+		return read_nodes<uint8_t, s0, s1, s2, s3, s4, s5, s6, s7>(*state);
+	case bits::reg_p:
+		return read_nodes<uint8_t, p0, p1, p2, p3, p4, p5, p6, p7>(*state);
+	case bits::reg_pc:
+		return read_nodes<uint16_t, pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7, pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state);
+	case bits::reg_pch:
+		return read_nodes<uint8_t, pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state);
+	case bits::reg_pcl:
+		return read_nodes<uint8_t, pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7>(*state);
+	case bits::reg_ir:
+		return read_nodes<uint8_t, notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7>(*state)^0xffu;
 	default:
 		throw std::runtime_error("Not implemented.");
 	}
@@ -492,6 +523,38 @@ void netlist_6502::set (bits _bits, uint16_t val)
 		return write_nodes<ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state, val);
 	case bits::bus_data:
 		return write_nodes<db0, db1, db2, db3, db4, db5, db6, db7>(*state, val);
+	case bits::bus_nmi:
+		return write_nodes<nmi>(*state, val);
+	case bits::bus_reset:
+		return write_nodes<res>(*state, val);
+	case bits::bus_irq:
+		return write_nodes<irq>(*state, val);
+	case bits::bus_rw:
+		return write_nodes<rw>(*state, val);
+	case bits::bus_sync:
+		return write_nodes<rw>(*state, val);
+	case bits::bus_clock:
+		return write_nodes<rw>(*state, val);
+	case bits::bus_ready:
+		return write_nodes<rw>(*state, val);
+	case bits::reg_a:	
+		return write_nodes<a0, a1, a2, a3, a4, a5, a6, a7>(*state, val);
+	case bits::reg_x:
+		return write_nodes<x0, x1, x2, x3, x4, x5, x6, x7>(*state, val);
+	case bits::reg_y:
+		return write_nodes<y0, y1, y2, y3, y4, y5, y6, y7>(*state, val);
+	case bits::reg_s:
+		return write_nodes<s0, s1, s2, s3, s4, s5, s6, s7>(*state, val);
+	case bits::reg_p:
+		return write_nodes<p0, p1, p2, p3, p4, p5, p6, p7>(*state, val);
+	case bits::reg_pc:
+		return write_nodes<pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7, pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state, val);
+	case bits::reg_pch:
+		return write_nodes<pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state, val);
+	case bits::reg_pcl:
+		return write_nodes<pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7>(*state, val);
+	case bits::reg_ir:
+		return write_nodes<notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7>(*state, uint8_t (val^0xffu));
 	default:
 		throw std::runtime_error("Not implemented.");
 	}
