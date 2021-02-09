@@ -1,4 +1,5 @@
 #include <memory>
+#include <span>
 
 struct netlist_6502
 {
@@ -31,6 +32,8 @@ struct netlist_6502
 
 	auto get (bits) const -> uint16_t;
 	void set (bits, uint16_t);
+	auto memory() -> std::span<std::uint8_t>;
+
 
 	std::unique_ptr<struct state_t> state;
 };

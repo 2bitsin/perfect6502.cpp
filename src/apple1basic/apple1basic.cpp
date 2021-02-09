@@ -18,13 +18,13 @@ unsigned short PC;
 int N, Z, C;
 
 void
-init_monitor (state_t* state)
+init_monitor (netlist_6502& nlsym)
 {
-	auto* memory = (uint8_t*)state;
+	auto memory = nlsym.memory();
 
 	FILE* f;
 	f = fopen ("apple1basic.bin", "r");
-	fread (memory + 0xE000, 1, 4096, f);
+	fread (&memory[0xE000], 1, 4096, f);
 	fclose (f);
 
 	memory [0xfffc] = 0x00;
@@ -34,11 +34,11 @@ init_monitor (state_t* state)
 
 
 void
-charout (struct state_t* state, char ch)
+charout (netlist_6502& nlsym, char ch)
 {
-	auto* memory = (uint8_t*)state;
+	auto memory = nlsym.memory();
 
-	unsigned char S = readSP (state);
+	unsigned char S = (uint8_t)nlsym.get(nlsym.reg_s);
 	unsigned short a = 1 + memory [0x0100 + S + 1] | memory [0x0100 + ((S + 2) & 0xFF)] << 8;
 
 	/*
@@ -119,7 +119,7 @@ handle_monitor (netlist_6502& nlsym)
 			unsigned char temp8 = d & 0x7F;
 			if (temp8 == 13)
 				temp8 = 10;
-			charout (state, temp8);
+			charout (nlsym, temp8);
 		}
 	}
 }
@@ -132,7 +132,7 @@ main ()
 	netlist_6502 nlsym;
 
 	/* set up memory for user program */
-	init_monitor (nlsym.state.get ());
+	init_monitor (nlsym);
 
 	/* emulate the 6502! */
 	for (;;)
@@ -142,7 +142,5 @@ main ()
 		if (!clk)
 			handle_monitor (nlsym);
 
-		//chipStatus(state);
-		//if (!(cycle % 1000)) printf("%d\n", cycle);
 	};
 }

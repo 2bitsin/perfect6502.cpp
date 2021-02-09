@@ -559,3 +559,8 @@ void netlist_6502::set (bits _bits, uint16_t val)
 		throw std::runtime_error("Not implemented.");
 	}
 }
+
+auto netlist_6502::memory () -> std::span<std::uint8_t>
+{
+	return std::span<std::uint8_t> (state->memory);
+}
