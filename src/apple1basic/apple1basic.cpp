@@ -92,7 +92,7 @@ handle_monitor(netlist_6502& nlsfo2)
 			nlsfo2.set(nlsfo2.bus_data, c);
 		}
 		if ((a & 0xFF1F) == 0xD011) {
-			if (readPC(state) == 0xE006)
+			if (nlsfo2.get(nlsfo2.reg_pc) == 0xE006)
 				/* if the code is reading a character, we have one ready */
 				nlsfo2.set(nlsfo2.bus_data, 0x80);
 			else
