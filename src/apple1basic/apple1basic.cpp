@@ -101,7 +101,7 @@ handle_monitor (netlist_6502& nlsym)
 		}
 		if ((a & 0xFF1F) == 0xD012)
 		{
-/* 0x80 would mean we're not yet ready to receive a character */
+			/* 0x80 would mean we're not yet ready to receive a character */
 			nlsym.set (nlsym.bus_data, 0);
 		}
 	}

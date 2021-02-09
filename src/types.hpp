@@ -25,11 +25,4 @@ typedef struct {
 } netlist_transdefs;
 
 
-typedef struct
-{
-	transnum_t transistor;
-	nodenum_t other_node;
-} c1c2_t;
-
-
 #endif
