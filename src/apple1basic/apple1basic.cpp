@@ -1,10 +1,11 @@
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
 //#ifndef _WIN32
 #include <sys/stat.h>
 #include <io.h>
 
 #include "../netlist_6502.hpp"
- 
+
 /************************************************************
  *
  * Interface to OS Library Code / Monitor
@@ -17,27 +18,28 @@ unsigned short PC;
 int N, Z, C;
 
 void
-init_monitor(state_t* state)
+init_monitor (state_t* state)
 {
 	auto* memory = (uint8_t*)state;
 
-	FILE *f;
-	f = fopen("apple1basic.bin", "r");
-	fread(memory + 0xE000, 1, 4096, f);
-	fclose(f);
+	FILE* f;
+	f = fopen ("apple1basic.bin", "r");
+	fread (memory + 0xE000, 1, 4096, f);
+	fclose (f);
 
-	memory[0xfffc] = 0x00;
-	memory[0xfffd] = 0xE0;
+	memory [0xfffc] = 0x00;
+	memory [0xfffd] = 0xE0;
 
 }
 
 
 void
-charout(struct state_t* state, char ch) {
+charout (struct state_t* state, char ch)
+{
 	auto* memory = (uint8_t*)state;
 
-	unsigned char S = readSP(state);
-	unsigned short a = 1 + memory[0x0100+S+1] | memory[0x0100+((S+2) & 0xFF)] << 8;
+	unsigned char S = readSP (state);
+	unsigned short a = 1 + memory [0x0100 + S + 1] | memory [0x0100 + ((S + 2) & 0xFF)] << 8;
 
 	/*
 	 * Apple I BASIC prints every character received
@@ -45,9 +47,9 @@ charout(struct state_t* state, char ch) {
 	 * anyway, so we have to avoid printing every
 	 * line again
 	 */
-	if (a==0xe2a6)	/* character echo */
+	if (a == 0xe2a6)	/* character echo */
 		return;
-	if (a==0xe2b6)	/* CR echo */
+	if (a == 0xe2b6)	/* CR echo */
 		return;
 
 	/*
@@ -56,81 +58,89 @@ charout(struct state_t* state, char ch) {
 	 * line breaks themselves, so ignore these
 	 * characters
 	 */
-	if (a==0xe025 && (ch==10 || ch==' '))
+	if (a == 0xe025 && (ch == 10 || ch == ' '))
 		return;
 
 	/* INPUT */
-	if (a==0xe182) {
-#if _WIN32
-		if (!isatty(0))
+	if (a == 0xe182)
+	{
+	#if _WIN32
+		if (!isatty (0))
 			return;
-#else
+	#else
 		struct stat st;
-		fstat(0, &st);
+		fstat (0, &st);
 		if (S_ISFIFO (st.st_mode))
 			return;
-#endif
+	#endif
 	}
 //#endif
 
-	putc(ch, stdout);
-	fflush(stdout);
+	putc (ch, stdout);
+	fflush (stdout);
 }
 
 void
-handle_monitor(netlist_6502& nlsfo2)
+handle_monitor (netlist_6502& nlsym)
 {
-	 struct state_t* state = nlsfo2.state.get();
-
-	if (readRW(state)) {
-		unsigned short a = nlsfo2.get(nlsfo2.bus_addr);
-		if ((a & 0xFF1F) == 0xD010) {
-			unsigned char c = getchar();
+	struct state_t* state = nlsym.state.get ();
+	if(nlsym.get (nlsym.bus_rw))
+	{
+		unsigned short a = nlsym.get (nlsym.bus_addr);
+		if ((a & 0xFF1F) == 0xD010)
+		{
+			unsigned char c = getchar ();
 			if (c == 10)
 				c = 13;
 			c |= 0x80;
-			nlsfo2.set(nlsfo2.bus_data, c);
+			nlsym.set (nlsym.bus_data, c);
 		}
-		if ((a & 0xFF1F) == 0xD011) {
-			if (nlsfo2.get(nlsfo2.reg_pc) == 0xE006)
+		if ((a & 0xFF1F) == 0xD011)
+		{
+			if (nlsym.get (nlsym.reg_pc) == 0xE006)
 				/* if the code is reading a character, we have one ready */
-				nlsfo2.set(nlsfo2.bus_data, 0x80);
+				nlsym.set (nlsym.bus_data, 0x80);
 			else
 				/* if the code checks for a STOP condition, nothing is pressed */
-				nlsfo2.set(nlsfo2.bus_data, 0);
+				nlsym.set (nlsym.bus_data, 0);
 		}
-		if ((a & 0xFF1F) == 0xD012) {
-			/* 0x80 would mean we're not yet ready to receive a character */
-			nlsfo2.set(nlsfo2.bus_data, 0);
+		if ((a & 0xFF1F) == 0xD012)
+		{
+/* 0x80 would mean we're not yet ready to receive a character */
+			nlsym.set (nlsym.bus_data, 0);
 		}
-	} else {
-		auto a = nlsfo2.get(nlsfo2.bus_addr);
-		auto d = (uint8_t)nlsfo2.get(nlsfo2.bus_data);
-		if ((a & 0xFF1F) == 0xD012) {
+	}
+	else
+	{
+		auto a = nlsym.get (nlsym.bus_addr);
+		auto d = (uint8_t)nlsym.get (nlsym.bus_data);
+		if ((a & 0xFF1F) == 0xD012)
+		{
 			unsigned char temp8 = d & 0x7F;
 			if (temp8 == 13)
 				temp8 = 10;
-			charout(state, temp8);
+			charout (state, temp8);
 		}
 	}
 }
 
 int
-main()
+main ()
 {
 	int clk = 0;
 
-	netlist_6502 nlso2;
+	netlist_6502 nlsym;
 
 	/* set up memory for user program */
-	init_monitor(nlso2.state.get());
+	init_monitor (nlsym.state.get ());
 
 	/* emulate the 6502! */
-	for (;;) {
-		nlso2.step();
+	for (;;)
+	{
+		nlsym.step ();
 		clk = !clk;
 		if (!clk)
-			handle_monitor(nlso2);
+			handle_monitor (nlsym);
 
 		//chipStatus(state);
 		//if (!(cycle % 1000)) printf("%d\n", cycle);

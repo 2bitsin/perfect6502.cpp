@@ -328,13 +328,13 @@ void read_nodes (state_t& state, _Value& value)
 	{
 		value >>= 1u;
 		value |= (get_node (state, index) << q);	
-	}
+	}	
 }
 
 template <typename _Value, auto... _Index>
 auto read_nodes (state_t& state) -> _Value
 {
-	_Value value;
+	_Value value { 0u };
 	read_nodes<_Index...>(state, value);
 	return value;
 }
@@ -487,11 +487,11 @@ auto netlist_6502::get (bits _bits) const -> uint16_t
 	case bits::bus_rw:
 		return read_nodes<uint8_t, rw>(*state);
 	case bits::bus_sync:
-		return read_nodes<uint8_t, rw>(*state);
+		return read_nodes<uint8_t, sync_>(*state);
 	case bits::bus_clock:
-		return read_nodes<uint8_t, rw>(*state);
+		return read_nodes<uint8_t, clk0>(*state);
 	case bits::bus_ready:
-		return read_nodes<uint8_t, rw>(*state);
+		return read_nodes<uint8_t, rdy>(*state);
 	case bits::reg_a:	
 		return read_nodes<uint8_t, a0, a1, a2, a3, a4, a5, a6, a7>(*state);
 	case bits::reg_x:
@@ -532,11 +532,11 @@ void netlist_6502::set (bits _bits, uint16_t val)
 	case bits::bus_rw:
 		return write_nodes<rw>(*state, val);
 	case bits::bus_sync:
-		return write_nodes<rw>(*state, val);
+		return write_nodes<sync_>(*state, val);
 	case bits::bus_clock:
-		return write_nodes<rw>(*state, val);
+		return write_nodes<clk0>(*state, val);
 	case bits::bus_ready:
-		return write_nodes<rw>(*state, val);
+		return write_nodes<rdy>(*state, val);
 	case bits::reg_a:	
 		return write_nodes<a0, a1, a2, a3, a4, a5, a6, a7>(*state, val);
 	case bits::reg_x:
