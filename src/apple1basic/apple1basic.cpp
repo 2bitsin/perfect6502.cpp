@@ -17,8 +17,10 @@ unsigned short PC;
 int N, Z, C;
 
 void
-init_monitor()
+init_monitor(state_t* state)
 {
+	auto* memory = (uint8_t*)state;
+
 	FILE *f;
 	f = fopen("apple1basic.bin", "r");
 	fread(memory + 0xE000, 1, 4096, f);
@@ -32,6 +34,8 @@ init_monitor()
 
 void
 charout(struct state_t* state, char ch) {
+	auto* memory = (uint8_t*)state;
+
 	unsigned char S = readSP(state);
 	unsigned short a = 1 + memory[0x0100+S+1] | memory[0x0100+((S+2) & 0xFF)] << 8;
 
@@ -117,7 +121,7 @@ main()
 	netlist_6502 nlso2;
 
 	/* set up memory for user program */
-	init_monitor();
+	init_monitor(nlso2.state.get());
 
 	/* emulate the 6502! */
 	for (;;) {

@@ -118,6 +118,8 @@ static constexpr inline netlist_6502_static_state_type st_state;
 
 struct state_t
 {
+	std::uint8_t memory[0x10000];
+
 	bitmap<netlist_6502_node_count>	nodes_pullup;
 	bitmap<netlist_6502_node_count>	nodes_pulldown;
 	bitmap<netlist_6502_node_count>	nodes_value;
@@ -137,6 +139,7 @@ void initialize_state (state_t& state)
 	using namespace node_names;
 
 	/* allocate state */
+	std::memset(state.memory, 0, sizeof(state.memory));
 	state.nodes_pullup = netlist_6502_node_is_pullup;
 	state.nodes_pulldown.clear ();
 	state.nodes_value.clear ();
@@ -431,28 +434,14 @@ readPC (state_t* state)
  *
  ************************************************************/
 
-uint8_t memory [65536];
-
-static uint8_t
-mRead (uint16_t a)
-{
-	return memory [a];
-}
-
-static void
-mWrite (uint16_t a, uint8_t d)
-{
-	memory [a] = d;
-}
-
 static inline void
 handle_memory (state_t& state)
 {
 	using namespace node_names;
 	if (get_node (state, rw))
-		writeDataBus (&state, mRead (readAddressBus (&state)));
+		writeDataBus(&state, state.memory[readAddressBus(&state)]);
 	else
-		mWrite (readAddressBus (&state), readDataBus (&state));
+		state.memory[readAddressBus(&state)] = readDataBus(&state);
 }
 
 /************************************************************

@@ -23,4 +23,3 @@ void writeDataBus(struct state_t *state, unsigned char);
 unsigned char readDataBus(struct state_t *state);
 unsigned char readIR(struct state_t *state);
 
-extern unsigned char memory[65536];
