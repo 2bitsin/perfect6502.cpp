@@ -29,9 +29,11 @@ struct netlist_6502
  ~netlist_6502();
 
 	void step();
+	void eval();
 
 	auto get (bits) const -> uint16_t;
 	void set (bits, uint16_t);
+
 	auto memory() -> std::span<std::uint8_t>;
 
 

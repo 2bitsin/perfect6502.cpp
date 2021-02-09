@@ -225,18 +225,18 @@ recalculate_node (state_type& state, nodenum_t node)
 	 * - collect all nodes behind toggled transistors
 	 *   for the next run
 	 */
-	for (auto&& node_index : state.group)
+	for (auto&& nindex : state.group)
 	{
-		if (state.nodes_value.get (node_index) == new_value)
+		if (state.nodes_value.get (nindex) == new_value)
 			continue;
 
-		state.nodes_value.set (node_index, new_value);
+		state.nodes_value.set (nindex, new_value);
 
-		for (auto&& trans : st_state.nodes_gates [node_index])
-			state.trans_state.set (trans, new_value);
+		for (auto&& tindex : st_state.nodes_gates [nindex])
+			state.trans_state.set (tindex, new_value);
 
-		auto& dependant = new_value ? st_state.nodes_left_dependant [node_index] 
-																: st_state.nodes_dependant [node_index];
+		auto& dependant = new_value ? st_state.nodes_left_dependant [nindex] 
+																: st_state.nodes_dependant [nindex];
 
 		for (auto&& node : dependant)
 			state.list [state.out].insert (node);
@@ -296,18 +296,6 @@ static inline bool
 get_node(state_type& state, nodenum_t index)
 {
 	return state.nodes_value.get(index);
-}
-
-static inline unsigned int
-read_nodes (state_type& state, std::initializer_list<nodenum_t> nodelist)
-{
-	int result = 0;
-	for (long long i = nodelist.size () - 1; i >= 0; i--)
-	{
-		result <<= 1;
-		result |= get_node (state, *(nodelist.begin () + i));
-	}
-	return result;
 }
 
 template <auto... _Index, typename _Value>
@@ -392,15 +380,20 @@ netlist_6502::~netlist_6502 ()
 void netlist_6502::step ()
 {
 	using namespace node_names;
-	int clk = get_node(*state, clk0);
 
-	/* invert clock */
+	auto clk = get_node(*state, clk0);
 	set_node (*state, clk0, !clk);
-	recalculate_node_list (*state);
+
+	eval();
 
 	/* handle memory reads and writes */
 	if (!clk)
 		handle_memory (*this);
+}
+
+void netlist_6502::eval ()
+{ 
+	recalculate_node_list (*state);
 }
 
 auto netlist_6502::get (bits _bits) const -> uint16_t
