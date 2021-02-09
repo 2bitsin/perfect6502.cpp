@@ -310,13 +310,6 @@ read_nodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 	return result;
 }
 
-void
-write_nodes (state_t& state, int v, std::initializer_list<nodenum_t> nodelist)
-{
-	for (auto i = 0u; i < nodelist.size (); i++, v >>= 1)
-		set_node (state, *(nodelist.begin () + i), v & 1);
-}
-
 template <auto... _Index, typename _Value>
 void write_nodes (state_t& state, _Value value)
 {
@@ -346,7 +339,9 @@ void
 writeDataBus (state_t* state, uint8_t d)
 {
 	using namespace node_names;
-	write_nodes (*state, d, { db0, db1, db2, db3, db4, db5, db6, db7 });
+	//write_nodes (*state, d, { db0, db1, db2, db3, db4, db5, db6, db7 });
+
+	write_nodes<db0, db1, db2, db3, db4, db5, db6, db7>(*state, d);
 }
 
 unsigned int
