@@ -4,9 +4,9 @@
 #include <cstddef>
 #include <cstdint>
 
-typedef uint16_t nodenum_t;
-typedef uint16_t transnum_t;
-typedef uint16_t count_t;
+using nodenum_t		= uint16_t;
+using transnum_t	= uint16_t;
+using count_t			= uint16_t;
 
 enum group_contains_value_t
 {
@@ -18,11 +18,12 @@ enum group_contains_value_t
 	contains_vss
 };
 
-typedef struct {
-	uint16_t gate;
-	uint16_t c1;
-	uint16_t c2;
-} netlist_transdefs;
+struct netlist_transdefs 
+{
+	nodenum_t gate;
+	nodenum_t c1;
+	nodenum_t c2;
+} ;
 
 
 #endif
