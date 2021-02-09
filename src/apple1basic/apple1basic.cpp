@@ -12,11 +12,6 @@
  *
  ************************************************************/
 
-/* imported by runtime.c */
-unsigned char A, X, Y, S, P;
-unsigned short PC;
-int N, Z, C;
-
 void
 init_monitor (netlist_6502& nlsym)
 {
@@ -83,10 +78,10 @@ charout (netlist_6502& nlsym, char ch)
 void
 handle_monitor (netlist_6502& nlsym)
 {
-	struct state_t* state = nlsym.state.get ();
+	
 	if(nlsym.get (nlsym.bus_rw))
 	{
-		unsigned short a = nlsym.get (nlsym.bus_addr);
+		auto a = nlsym.get (nlsym.bus_addr);
 		if ((a & 0xFF1F) == 0xD010)
 		{
 			unsigned char c = getchar ();

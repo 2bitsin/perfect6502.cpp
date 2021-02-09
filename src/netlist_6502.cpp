@@ -116,7 +116,7 @@ struct netlist_6502_static_state_type
 static constexpr inline netlist_6502_static_state_type st_state;
 
 
-struct state_t
+struct state_type
 {
 	std::uint8_t memory[0x10000];
 
@@ -134,7 +134,7 @@ struct state_t
 };
 
 
-void initialize_state (state_t& state)
+void initialize_state (state_type& state)
 {
 	using namespace node_names;
 
@@ -152,7 +152,7 @@ void initialize_state (state_t& state)
 }
 
 
-static inline void group_add_node (state_t& state, nodenum_t n)
+static inline void group_add_node (state_type& state, nodenum_t n)
 {
 	/*
 	 * We need to stop at vss and vcc, otherwise we'll revisit other groups
@@ -197,7 +197,7 @@ static inline void group_add_node (state_t& state, nodenum_t n)
 }
 
 static inline void
-group_add_all_nodes (state_t& state, nodenum_t node)
+group_add_all_nodes (state_type& state, nodenum_t node)
 {
 	state.group.clear ();
 	state.group_contains_value = contains_nothing;
@@ -205,7 +205,7 @@ group_add_all_nodes (state_t& state, nodenum_t node)
 }
 
 static inline void
-recalculate_node (state_t& state, nodenum_t node)
+recalculate_node (state_type& state, nodenum_t node)
 {
 	/*
 	 * get all nodes that are connected through
@@ -244,7 +244,7 @@ recalculate_node (state_t& state, nodenum_t node)
 }
 
 void
-recalculate_node_list (state_t& state)
+recalculate_node_list (state_type& state)
 {
 	/* loop limiter */
 	for (auto j : range(0, 20))
@@ -274,7 +274,7 @@ recalculate_node_list (state_t& state)
 }
 
 void
-stabilize_chip (state_t& state)
+stabilize_chip (state_type& state)
 {
 	for (auto index: range(0, netlist_6502_node_count))
 		state.list [state.out].insert (index);
@@ -283,7 +283,7 @@ stabilize_chip (state_t& state)
 }
 
 void 
-set_node (state_t& state, nodenum_t nn, int s)
+set_node (state_type& state, nodenum_t nn, int s)
 {
 	state.nodes_pullup.set (nn, s);
 	state.nodes_pulldown.set (nn, !s);
@@ -293,13 +293,13 @@ set_node (state_t& state, nodenum_t nn, int s)
 }
 
 bool 
-get_node(state_t& state, nodenum_t nn)
+get_node(state_type& state, nodenum_t nn)
 {
 	return state.nodes_value.get(nn);
 }
 
 unsigned int
-read_nodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
+read_nodes (state_type* state, std::initializer_list<nodenum_t> nodelist)
 {
 	int result = 0;
 	for (long long i = nodelist.size () - 1; i >= 0; i--)
@@ -311,7 +311,7 @@ read_nodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 }
 
 template <auto... _Index, typename _Value>
-void write_nodes (state_t& state, _Value value)
+void write_nodes (state_type& state, _Value value)
 {
 	for(const auto index: { _Index ... })
 	{
@@ -321,7 +321,7 @@ void write_nodes (state_t& state, _Value value)
 }
 
 template <auto... _Index, typename _Value>
-void read_nodes (state_t& state, _Value& value)
+void read_nodes (state_type& state, _Value& value)
 {
 	static constexpr auto q = sizeof...(_Index) - 1u;
 	for(const auto index: { _Index ... })
@@ -332,92 +332,21 @@ void read_nodes (state_t& state, _Value& value)
 }
 
 template <typename _Value, auto... _Index>
-auto read_nodes (state_t& state) -> _Value
+auto read_nodes (state_type& state) -> _Value
 {
 	_Value value { 0u };
 	read_nodes<_Index...>(state, value);
 	return value;
 }
 
-
-unsigned int
-readRW (state_t* state)
-{
-	using namespace node_names;
-	return get_node (*state, rw);
-}
-
-uint8_t
-readA (state_t* state)
-{
-	using namespace node_names;
-	return (uint8_t)read_nodes (state, { a0, a1, a2, a3, a4, a5, a6, a7 });
-}
-
-uint8_t
-readX (state_t* state)
-{
-	using namespace node_names;
-	return (uint8_t)read_nodes (state, { x0, x1, x2, x3, x4, x5, x6, x7 });
-}
-
-uint8_t
-readY (state_t* state)
-{
-	using namespace node_names;
-	return (uint8_t)read_nodes (state, { y0, y1, y2, y3, y4, y5, y6, y7 });
-}
-
-uint8_t
-readP (state_t* state)
-{
-	using namespace node_names;
-	return (uint8_t)read_nodes (state, { p0, p1, p2, p3, p4, p5, p6, p7 });
-}
-
-uint8_t
-readIR (state_t* state)
-{
-	using namespace node_names;
-	return (uint8_t)read_nodes (state, { notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7 }) ^ 0xFF;
-
-}
-
-uint8_t
-readSP (state_t* state)
-{
-	using namespace node_names;
-	return (uint8_t)read_nodes (state, { s0, s1, s2, s3, s4, s5, s6, s7 });
-}
-
-uint8_t
-readPCL (state_t* state)
-{
-	using namespace node_names;
-	return (uint8_t)read_nodes (state, { pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7 });
-}
-
-uint8_t
-readPCH (state_t* state)
-{
-	using namespace node_names;
-	return (uint8_t)read_nodes (state, { pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7 });
-}
-
-uint16_t
-readPC (state_t* state)
-{
-	return (uint16_t)(((uint16_t)readPCH (state) << 8) | (uint16_t)readPCL (state));
-}
-
 static inline void
-handle_memory (netlist_6502& nlsfo2)
+handle_memory (netlist_6502& nlsym)
 {
 	using namespace node_names;
-	if (get_node (*nlsfo2.state, rw))
-		nlsfo2.set(nlsfo2.bus_data, nlsfo2.state->memory[nlsfo2.get(nlsfo2.bus_addr)]);
+	if (get_node (*nlsym.state, rw))
+		nlsym.set(nlsym.bus_data, nlsym.memory()[nlsym.get(nlsym.bus_addr)]);
 	else
-		nlsfo2.state->memory[nlsfo2.get(nlsfo2.bus_addr)] = nlsfo2.get(nlsfo2.bus_data);
+		nlsym.memory()[nlsym.get(nlsym.bus_addr)] = nlsym.get(nlsym.bus_data);
 }
 
 using namespace node_names;
@@ -448,7 +377,7 @@ void init_and_reset_chip (netlist_6502& nl)
 }
 
 netlist_6502::netlist_6502 ()
-:	state { std::make_unique<state_t>() }
+:	state { std::make_unique<state_type>() }
 { 
 	init_and_reset_chip(*this); 
 }
