@@ -121,7 +121,7 @@ main()
 
 	/* emulate the 6502! */
 	for (;;) {
-		step(nlso2.state.get());
+		nlso2.step();
 		clk = !clk;
 		if (!clk)
 			handle_monitor(nlso2.state.get());

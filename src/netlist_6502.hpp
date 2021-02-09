@@ -5,11 +5,11 @@ struct netlist_6502
 	netlist_6502();
 	~netlist_6502();
 
+	void step();
+
 	std::unique_ptr<struct state_t> state;
 };
 
-
-void step(struct state_t *state);
 void chipStatus(struct state_t *state);
 unsigned short readPC(struct state_t *state);
 unsigned char readA(struct state_t *state);

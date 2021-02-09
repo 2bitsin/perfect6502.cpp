@@ -446,13 +446,13 @@ mWrite (uint16_t a, uint8_t d)
 }
 
 static inline void
-handleMemory (state_t* state)
+handleMemory (state_t& state)
 {
 	using namespace node_names;
-	if (state->nodes_value.get (rw))
-		writeDataBus (state, mRead (readAddressBus (state)));
+	if (get_node (state, rw))
+		writeDataBus (&state, mRead (readAddressBus (&state)));
 	else
-		mWrite (readAddressBus (state), readDataBus (state));
+		mWrite (readAddressBus (&state), readDataBus (&state));
 }
 
 /************************************************************
@@ -464,14 +464,14 @@ handleMemory (state_t* state)
 unsigned int cycle;
 
 void
-step (state_t* state)
+step (state_t& state)
 {
 	using namespace node_names;
-	int clk = get_node(*state, clk0);
+	int clk = get_node(state, clk0);
 
 	/* invert clock */
-	set_node (*state, clk0, !clk);
-	recalculate_node_list (*state);
+	set_node (state, clk0, !clk);
+	recalculate_node_list (state);
 
 	/* handle memory reads and writes */
 	if (!clk)
@@ -481,29 +481,29 @@ step (state_t* state)
 }
 
 using namespace node_names;
-void initAndResetChip (struct state_t* state)
+void init_and_reset_chip (struct state_t& state)
 {
 	using namespace node_names;
 	/* set up data structures for efficient emulation */
 		
-	initialize_state (*state);
+	initialize_state (state);
 
-	set_node (*state, res, 0);
-	set_node (*state, clk0, 1);
-	set_node (*state, rdy, 1);
-	set_node (*state, so, 0);
-	set_node (*state, irq, 1);
-	set_node (*state, nmi, 1);
+	set_node (state, res, 0);
+	set_node (state, clk0, 1);
+	set_node (state, rdy, 1);
+	set_node (state, so, 0);
+	set_node (state, irq, 1);
+	set_node (state, nmi, 1);
 
-	stabilize_chip (*state);
+	stabilize_chip (state);
 
 	/* hold RESET for 8 cycles */
 	for (int i = 0; i < 16; i++)
 		step (state);
 
 	/* release RESET */
-	set_node (*state, res, 1);
-	recalculate_node_list (*state);
+	set_node (state, res, 1);
+	recalculate_node_list (state);
 
 	cycle = 0;
 }
@@ -511,8 +511,13 @@ void initAndResetChip (struct state_t* state)
 netlist_6502::netlist_6502 ()
 :	state { std::make_unique<state_t>() }
 { 
-	initAndResetChip(state.get()); 
+	init_and_reset_chip(*state); 
 }
 
 netlist_6502::~netlist_6502 ()
 { }
+
+void netlist_6502::step ()
+{
+	::step(*state);
+}
