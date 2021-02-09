@@ -31,6 +31,7 @@
 #include <cstring>
 #include <iterator>
 #include <initializer_list>
+#include <stdexcept>
 
 #include "utils/bitmap.hpp"
 #include "utils/array_list.hpp"
@@ -320,27 +321,44 @@ void write_nodes (state_t& state, _Value value)
 	}
 }
 
+template <auto... _Index, typename _Value>
+void read_nodes (state_t& state, _Value& value)
+{
+	static constexpr auto q = sizeof...(_Index) - 1u;
+	for(const auto index: { _Index ... })
+	{
+		value >>= 1u;
+		value |= (get_node (state, index) << q);	
+	}
+}
+
+template <typename _Value, auto... _Index>
+auto read_nodes (state_t& state) -> _Value
+{
+	_Value value;
+	read_nodes<_Index...>(state, value);
+	return value;
+}
+
 
 uint16_t
 readAddressBus (state_t* state)
 {
 	using namespace node_names;
-	return (uint16_t)read_nodes (state, { ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15 });
+	return read_nodes<uint16_t, ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15> (*state);	
 }
 
 uint8_t
 readDataBus (state_t* state)
 {
 	using namespace node_names;
-	return (uint8_t)read_nodes (state, { db0, db1, db2, db3, db4, db5, db6, db7 });
+	return read_nodes<uint8_t, db0, db1, db2, db3, db4, db5, db6, db7>(*state);
 }
 
 void
 writeDataBus (state_t* state, uint8_t d)
 {
 	using namespace node_names;
-	//write_nodes (*state, d, { db0, db1, db2, db3, db4, db5, db6, db7 });
-
 	write_nodes<db0, db1, db2, db3, db4, db5, db6, db7>(*state, d);
 }
 
@@ -415,13 +433,13 @@ readPC (state_t* state)
 }
 
 static inline void
-handle_memory (state_t& state)
+handle_memory (netlist_6502& nlsfo2)
 {
 	using namespace node_names;
-	if (get_node (state, rw))
-		writeDataBus(&state, state.memory[readAddressBus(&state)]);
+	if (get_node (*nlsfo2.state, rw))
+		nlsfo2.set(nlsfo2.bus_data, nlsfo2.state->memory[nlsfo2.get(nlsfo2.bus_addr)]);
 	else
-		state.memory[readAddressBus(&state)] = readDataBus(&state);
+		nlsfo2.state->memory[nlsfo2.get(nlsfo2.bus_addr)] = nlsfo2.get(nlsfo2.bus_data);
 }
 
 using namespace node_names;
@@ -471,5 +489,31 @@ void netlist_6502::step ()
 
 	/* handle memory reads and writes */
 	if (!clk)
-		handle_memory (*state);
+		handle_memory (*this);
+}
+
+auto netlist_6502::get (bits _bits) const -> uint16_t
+{
+	switch(_bits)
+	{
+	case bits::bus_addr:
+		return read_nodes<uint16_t, ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state);
+	case bits::bus_data:
+		return read_nodes<uint8_t, db0, db1, db2, db3, db4, db5, db6, db7>(*state);
+	default:
+		throw std::runtime_error("Not implemented.");
+	}
+}
+
+void netlist_6502::set (bits _bits, uint16_t val)
+{ 
+	switch(_bits)
+	{
+	case bits::bus_addr:
+		return write_nodes<ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state, val);
+	case bits::bus_data:
+		return write_nodes<db0, db1, db2, db3, db4, db5, db6, db7>(*state, val);
+	default:
+		throw std::runtime_error("Not implemented.");
+	}
 }
