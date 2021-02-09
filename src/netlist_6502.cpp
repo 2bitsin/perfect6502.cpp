@@ -273,7 +273,6 @@ recalculate_node_list (state_t& state)
 	state.list [state.out].clear ();
 }
 
-
 void
 stabilize_chip (state_t& state)
 {
@@ -282,12 +281,6 @@ stabilize_chip (state_t& state)
 
 	recalculate_node_list (state);
 }
-
-/************************************************************
- *
- * Node State
- *
- ************************************************************/
 
 void 
 set_node (state_t& state, nodenum_t nn, int s)
@@ -305,12 +298,6 @@ get_node(state_t& state, nodenum_t nn)
 	return state.nodes_value.get(nn);
 }
 
-/************************************************************
- *
- * Interfacing and Extracting State
- *
- ************************************************************/
-
 unsigned int
 read_nodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 {
@@ -323,7 +310,6 @@ read_nodes (state_t* state, std::initializer_list<nodenum_t> nodelist)
 	return result;
 }
 
-
 void
 write_nodes (state_t& state, int v, std::initializer_list<nodenum_t> nodelist)
 {
@@ -331,11 +317,16 @@ write_nodes (state_t& state, int v, std::initializer_list<nodenum_t> nodelist)
 		set_node (state, *(nodelist.begin () + i), v & 1);
 }
 
-/************************************************************
- *
- * 6502-specific Interfacing
- *
- ************************************************************/
+template <auto... _Index, typename _Value>
+void write_nodes (state_t& state, _Value value)
+{
+	for(const auto index: { _Index ... })
+	{
+		set_node (state, index, value & 1u);
+		value >>= 1u;
+	}
+}
+
 
 uint16_t
 readAddressBus (state_t* state)
@@ -362,7 +353,7 @@ unsigned int
 readRW (state_t* state)
 {
 	using namespace node_names;
-	return state->nodes_value.get (rw);
+	return get_node (*state, rw);
 }
 
 uint8_t
@@ -428,12 +419,6 @@ readPC (state_t* state)
 	return (uint16_t)(((uint16_t)readPCH (state) << 8) | (uint16_t)readPCL (state));
 }
 
-/************************************************************
- *
- * Address Bus and Data Bus Interface
- *
- ************************************************************/
-
 static inline void
 handle_memory (state_t& state)
 {
@@ -443,13 +428,6 @@ handle_memory (state_t& state)
 	else
 		state.memory[readAddressBus(&state)] = readDataBus(&state);
 }
-
-/************************************************************
- *
- * Main Clock Loop
- *
- ************************************************************/
-
 
 using namespace node_names;
 void init_and_reset_chip (netlist_6502& nl)
