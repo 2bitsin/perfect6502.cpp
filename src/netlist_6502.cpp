@@ -446,7 +446,7 @@ mWrite (uint16_t a, uint8_t d)
 }
 
 static inline void
-handleMemory (state_t& state)
+handle_memory (state_t& state)
 {
 	using namespace node_names;
 	if (get_node (state, rw))
@@ -461,57 +461,38 @@ handleMemory (state_t& state)
  *
  ************************************************************/
 
-unsigned int cycle;
-
-void
-step (state_t& state)
-{
-	using namespace node_names;
-	int clk = get_node(state, clk0);
-
-	/* invert clock */
-	set_node (state, clk0, !clk);
-	recalculate_node_list (state);
-
-	/* handle memory reads and writes */
-	if (!clk)
-		handleMemory (state);
-
-	cycle++;
-}
 
 using namespace node_names;
-void init_and_reset_chip (struct state_t& state)
+void init_and_reset_chip (netlist_6502& nl)
 {
 	using namespace node_names;
 	/* set up data structures for efficient emulation */
 		
-	initialize_state (state);
+	initialize_state (*nl.state);
 
-	set_node (state, res, 0);
-	set_node (state, clk0, 1);
-	set_node (state, rdy, 1);
-	set_node (state, so, 0);
-	set_node (state, irq, 1);
-	set_node (state, nmi, 1);
+	set_node (*nl.state, res, 0);
+	set_node (*nl.state, clk0, 1);
+	set_node (*nl.state, rdy, 1);
+	set_node (*nl.state, so, 0);
+	set_node (*nl.state, irq, 1);
+	set_node (*nl.state, nmi, 1);
 
-	stabilize_chip (state);
+	stabilize_chip (*nl.state);
 
 	/* hold RESET for 8 cycles */
 	for (int i = 0; i < 16; i++)
-		step (state);
+		nl.step ();
 
 	/* release RESET */
-	set_node (state, res, 1);
-	recalculate_node_list (state);
+	set_node (*nl.state, res, 1);
+	recalculate_node_list (*nl.state);
 
-	cycle = 0;
 }
 
 netlist_6502::netlist_6502 ()
 :	state { std::make_unique<state_t>() }
 { 
-	init_and_reset_chip(*state); 
+	init_and_reset_chip(*this); 
 }
 
 netlist_6502::~netlist_6502 ()
@@ -519,5 +500,14 @@ netlist_6502::~netlist_6502 ()
 
 void netlist_6502::step ()
 {
-	::step(*state);
+	using namespace node_names;
+	int clk = get_node(*state, clk0);
+
+	/* invert clock */
+	set_node (*state, clk0, !clk);
+	recalculate_node_list (*state);
+
+	/* handle memory reads and writes */
+	if (!clk)
+		handle_memory (*state);
 }
