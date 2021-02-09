@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include <io.h>
 
-#include "../perfect6502.hpp"
+#include "../netlist_6502.hpp"
  
 /************************************************************
  *

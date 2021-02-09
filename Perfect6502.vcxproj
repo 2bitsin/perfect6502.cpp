@@ -170,13 +170,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\apple1basic\apple1basic.cpp" />
-    <ClCompile Include="src\perfect6502.cpp" />
+    <ClCompile Include="src\netlist_6502.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\perfect6502.hpp" />
+    <ClInclude Include="src\netlist_6502.hpp" />
     <ClInclude Include="src\types.hpp" />
     <ClInclude Include="src\utils\bitmap.hpp" />
-    <ClInclude Include="src\perfect6502_netlist.inl" />
+    <ClInclude Include="src\netlist_6502.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

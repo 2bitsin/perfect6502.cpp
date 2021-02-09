@@ -39,8 +39,8 @@
 #include "utils/misc.hpp"
 
 #include "types.hpp"
-#include "perfect6502.hpp"
-#include "perfect6502_netlist.inl"
+#include "netlist_6502.hpp"
+#include "netlist_6502.inl"
 
 
 struct netlist_6502_static_state_type
