@@ -63,8 +63,8 @@ struct netlist_6502_static_state_type
 			c1c2count [netlist_6502_transdefs [i].c2]++;
 		}
 
-		for (auto&& transistor : range (0u, netlist_6502_transistor_count))
-			nodes_gates [netlist_6502_transdefs [transistor].gate].push (transistor);
+		for (auto&& tindex : range (0u, netlist_6502_transistor_count))
+			nodes_gates [netlist_6502_transdefs [tindex].gate].push (tindex);
 
 		/* then sum the counts to find each node's offset into the c1c2 array */
 		count_t c1c2offset = 0;
