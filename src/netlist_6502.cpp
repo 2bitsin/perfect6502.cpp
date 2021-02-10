@@ -82,26 +82,26 @@ struct netlist_6502_static_state_type
 
 		for (auto&& node_index : range<uint16_t> (0, netlist_6502_transistor_count))
 		{
-			nodenum_t c1 = netlist_6502_transdefs [node_index].c1;
-			nodenum_t c2 = netlist_6502_transdefs [node_index].c2;
+			const auto c1 = netlist_6502_transdefs [node_index].c1;
+			const auto c2 = netlist_6502_transdefs [node_index].c2;
 			nodes_c1c2s [nodes_c1c2offset [c1] + c1c2count [c1]++] = { node_index, c2 };
 			nodes_c1c2s [nodes_c1c2offset [c2] + c1c2count [c2]++] = { node_index, c1 };
 		}
 
-		for (auto&& node_index : range (0, netlist_6502_node_count))
+		for (auto&& nindex : range (0, netlist_6502_node_count))
 		{
-			for (auto&& transistor : nodes_gates [node_index])
+			for (auto&& tindex : nodes_gates [nindex])
 			{
-				const auto c1 = netlist_6502_transdefs [transistor].c1;
-				const auto c2 = netlist_6502_transdefs [transistor].c2;
+				const auto c1 = netlist_6502_transdefs [tindex].c1;
+				const auto c2 = netlist_6502_transdefs [tindex].c2;
 
 				const auto cond1 = !one_of<vss, vcc> (c1);
 				const auto cond2 = !one_of<vss, vcc> (c2);
 
-				if (cond1) nodes_dependant [node_index].insert (c1);
-				if (cond2) nodes_dependant [node_index].insert (c2);
+				if (cond1) nodes_dependant [nindex].insert (c1);
+				if (cond2) nodes_dependant [nindex].insert (c2);
 
-				nodes_left_dependant [node_index].insert (cond1 ? c1 : c2);
+				nodes_left_dependant [nindex].insert (cond1 ? c1 : c2);
 			}
 		}
 	}
