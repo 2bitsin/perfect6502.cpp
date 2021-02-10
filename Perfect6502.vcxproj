@@ -176,8 +176,12 @@
     <ClInclude Include="src\apple1basic\apple1_basic_bin.hpp" />
     <ClInclude Include="src\netlist_6502.hpp" />
     <ClInclude Include="src\types.hpp" />
+    <ClInclude Include="src\utils\array_list.hpp" />
+    <ClInclude Include="src\utils\array_set.hpp" />
     <ClInclude Include="src\utils\bitmap.hpp" />
     <ClInclude Include="src\netlist_6502.inl" />
+    <ClInclude Include="src\utils\misc.hpp" />
+    <ClInclude Include="src\utils\range.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

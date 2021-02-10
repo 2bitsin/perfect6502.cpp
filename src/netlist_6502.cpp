@@ -1,5 +1,5 @@
 ﻿/*
- Copyright (c) 2010,2014,2020 Michael Steil, Brian Silverman, Barry Silverman, Aleksandr Ševčenko
+ Copyright (c) 2010,2014,2021 Michael Steil, Brian Silverman, Barry Silverman, Aleksandr Ševčenko
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,6 @@
  THE SOFTWARE.
 */
 
-/************************************************************
- *
- * Libc Functions and Basic Data Types
- *
- ************************************************************/
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -36,7 +30,7 @@
 #include "utils/bitmap.hpp"
 #include "utils/array_list.hpp"
 #include "utils/array_set.hpp"
-#include "utils/range_iterator.hpp"
+#include "utils/range.hpp"
 #include "utils/misc.hpp"
 
 #include "types.hpp"
