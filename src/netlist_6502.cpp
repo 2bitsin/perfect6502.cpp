@@ -43,8 +43,8 @@ struct netlist_6502_static_state_type
 	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
 	std::pair<nodenum_t, nodenum_t> nodes_c1c2s [netlist_6502_transistor_count * 2];
 	array_list<nodenum_t, netlist_6502_node_count> nodes_gates [netlist_6502_node_count];
-	array_set<nodenum_t, netlist_6502_node_count> nodes_dependant [netlist_6502_node_count];
-	array_set<nodenum_t, netlist_6502_node_count> nodes_left_dependant [netlist_6502_node_count];
+	array_list<nodenum_t, netlist_6502_node_count> nodes_dependant [netlist_6502_node_count];
+	array_list<nodenum_t, netlist_6502_node_count> nodes_left_dependant [netlist_6502_node_count];
 
 	constexpr netlist_6502_static_state_type ()
 	{
@@ -97,10 +97,10 @@ struct netlist_6502_static_state_type
 				const auto cond1 = !one_of<vss, vcc> (c1);
 				const auto cond2 = !one_of<vss, vcc> (c2);
 
-				if (cond1) nodes_dependant [nindex].insert (c1);
-				if (cond2) nodes_dependant [nindex].insert (c2);
+				if (cond1) nodes_dependant [nindex].push_unique (c1);
+				if (cond2) nodes_dependant [nindex].push_unique (c2);
 
-				nodes_left_dependant [nindex].insert (cond1 ? c1 : c2);
+				nodes_left_dependant [nindex].push_unique (cond1 ? c1 : c2);
 			}
 		}
 	}
@@ -221,8 +221,8 @@ recalculate_node (state_type& state, nodenum_t node)
 		for (auto&& tindex : st_state.nodes_gates [nindex])
 			state.trans_state.set (tindex, new_value);
 
-		auto& dependant = new_value ? st_state.nodes_left_dependant [nindex] 
-																: st_state.nodes_dependant [nindex];
+		auto&& dependant = new_value ? st_state.nodes_left_dependant [nindex] 
+																 : st_state.nodes_dependant [nindex];
 
 		for (auto&& node : dependant)
 			state.list [state.out].insert (node);
