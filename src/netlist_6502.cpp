@@ -42,7 +42,6 @@ struct netlist_6502_static_state_type
 {
 	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
 	std::pair<nodenum_t, nodenum_t> nodes_c1c2s [netlist_6502_transistor_count * 2];
-
 	array_list<nodenum_t, netlist_6502_node_count> nodes_gates [netlist_6502_node_count];
 	array_set<nodenum_t, netlist_6502_node_count> nodes_dependant [netlist_6502_node_count];
 	array_set<nodenum_t, netlist_6502_node_count> nodes_left_dependant [netlist_6502_node_count];
