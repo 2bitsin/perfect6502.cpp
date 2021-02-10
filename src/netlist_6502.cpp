@@ -87,8 +87,7 @@ struct netlist_6502_static_state_type
 		{
 			for (auto&& tindex : nodes_gates [nindex])
 			{
-				const auto c1 = netlist_6502_transdefs [tindex].c1;
-				const auto c2 = netlist_6502_transdefs [tindex].c2;
+				auto&& [_, c1, c2] = netlist_6502_transdefs [tindex];
 
 				const auto cond1 = !one_of<vss, vcc> (c1);
 				const auto cond2 = !one_of<vss, vcc> (c2);
