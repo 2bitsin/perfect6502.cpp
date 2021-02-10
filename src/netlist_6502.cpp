@@ -43,8 +43,7 @@ struct netlist_6502_static_state_type
 	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
 	std::pair<nodenum_t, nodenum_t> nodes_c1c2s [netlist_6502_transistor_count * 2];
 	array_list<nodenum_t, netlist_6502_node_count> nodes_gates [netlist_6502_node_count];
-	array_list<nodenum_t, netlist_6502_node_count> nodes_dependant [netlist_6502_node_count];
-	array_list<nodenum_t, netlist_6502_node_count> nodes_left_dependant [netlist_6502_node_count];
+	array_list<nodenum_t, netlist_6502_node_count> nodes_dependant [2][netlist_6502_node_count];	
 
 	constexpr netlist_6502_static_state_type ()
 	{
@@ -53,8 +52,8 @@ struct netlist_6502_static_state_type
 		count_t c1c2count [netlist_6502_node_count];
 
 		for (auto& list : nodes_gates						)	list.clear ();
-		for (auto& list : nodes_dependant				)	list.clear ();
-		for (auto& list : nodes_left_dependant	)	list.clear ();
+		for (auto& list : nodes_dependant[0]		)	list.clear ();
+		for (auto& list : nodes_dependant[1]		)	list.clear ();
 		for (auto& node : nodes_c1c2offset			)	node = 0;
 		for (auto& node : c1c2count							) node = 0;
 				
@@ -97,10 +96,9 @@ struct netlist_6502_static_state_type
 				const auto cond1 = !one_of<vss, vcc> (c1);
 				const auto cond2 = !one_of<vss, vcc> (c2);
 
-				if (cond1) nodes_dependant [nindex].push_unique (c1);
-				if (cond2) nodes_dependant [nindex].push_unique (c2);
-
-				nodes_left_dependant [nindex].push_unique (cond1 ? c1 : c2);
+				if (cond1) nodes_dependant[0][nindex].push_unique (c1);
+				if (cond2) nodes_dependant[0][nindex].push_unique (c2);
+				nodes_dependant[1] [nindex].push_unique (cond1 ? c1 : c2);
 			}
 		}
 	}
@@ -215,17 +213,11 @@ recalculate_node (state_type& state, nodenum_t node)
 	{
 		if (state.nodes_value.get (nindex) == new_value)
 			continue;
-
 		state.nodes_value.set (nindex, new_value);
-
 		for (auto&& tindex : st_state.nodes_gates [nindex])
 			state.trans_state.set (tindex, new_value);
-
-		auto&& dependant = new_value ? st_state.nodes_left_dependant [nindex] 
-																 : st_state.nodes_dependant [nindex];
-
-		for (auto&& node : dependant)
-			state.list [state.out].insert (node);
+		for (auto&& nindex : st_state.nodes_dependant[new_value][nindex])
+			state.list [state.out].insert (nindex);
 	}
 }
 
