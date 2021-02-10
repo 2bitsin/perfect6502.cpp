@@ -78,12 +78,12 @@ struct netlist_6502_static_state_type
 		for (auto& node : c1c2count)
 			node = 0;
 
-		for (auto&& node_index : range<uint16_t> (0, netlist_6502_transistor_count))
+		for (auto&& tindex : range<uint16_t> (0, netlist_6502_transistor_count))
 		{
-			const auto c1 = netlist_6502_transdefs [node_index].c1;
-			const auto c2 = netlist_6502_transdefs [node_index].c2;
-			nodes_c1c2s [nodes_c1c2offset [c1] + c1c2count [c1]++] = { node_index, c2 };
-			nodes_c1c2s [nodes_c1c2offset [c2] + c1c2count [c2]++] = { node_index, c1 };
+			const auto c1 = netlist_6502_transdefs [tindex].c1;
+			const auto c2 = netlist_6502_transdefs [tindex].c2;
+			nodes_c1c2s [nodes_c1c2offset [c1] + c1c2count [c1]++] = { tindex, c2 };
+			nodes_c1c2s [nodes_c1c2offset [c2] + c1c2count [c2]++] = { tindex, c1 };
 		}
 
 		for (auto&& nindex : range (0, netlist_6502_node_count))
@@ -170,10 +170,10 @@ group_add_node (state_type& state, nodenum_t n)
 	}
 
 	/* revisit all transistors that control this node */
-	const auto& offs = st_state.nodes_c1c2offset;
-	for (auto&& transistor : range (offs [n], offs [n + 1]))
+	auto&& offset = st_state.nodes_c1c2offset;
+	for (auto&& tindex : range (offset[n], offset[n + 1]))
 	{
-		auto c = st_state.nodes_c1c2s [transistor];
+		auto c = st_state.nodes_c1c2s [tindex];
 		/* if the transistor connects c1 and c2... */
 		if (state.trans_state.get (c.first))
 			group_add_node (state, c.second);
