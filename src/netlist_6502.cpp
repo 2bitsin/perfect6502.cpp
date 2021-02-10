@@ -1,5 +1,5 @@
-/*
- Copyright (c) 2010,2014 Michael Steil, Brian Silverman, Barry Silverman
+﻿/*
+ Copyright (c) 2010,2014,2020 Michael Steil, Brian Silverman, Barry Silverman, Aleksandr Ševčenko
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -115,22 +115,16 @@ struct netlist_6502_static_state_type
 
 static constexpr inline netlist_6502_static_state_type st_state;
 
-
 struct state_type
 {
-	std::uint8_t memory[0x10000];
-
 	bitmap<netlist_6502_node_count>	nodes_pullup;
 	bitmap<netlist_6502_node_count>	nodes_pulldown;
 	bitmap<netlist_6502_node_count>	nodes_value;
-
 	bitmap<netlist_6502_transistor_count>	trans_state;
-
 	array_set<nodenum_t, netlist_6502_node_count> group;
 	group_contains_value_t group_contains_value;
-
-	unsigned in, out;
 	array_set<nodenum_t, netlist_6502_node_count> list [2];
+	unsigned in, out;
 };
 
 
@@ -138,8 +132,7 @@ void initialize_state (state_type& state)
 {
 	using namespace node_names;
 
-	/* allocate state */
-	std::memset(state.memory, 0, sizeof(state.memory));
+	/* allocate state */	
 	state.nodes_pullup = netlist_6502_node_is_pullup;
 	state.nodes_pulldown.clear ();
 	state.nodes_value.clear ();
@@ -255,7 +248,6 @@ recalculate_node_list (state_type& state)
 		 * secondary list
 		 */
 		std::swap (state.in, state.out);
-
 		if (state.list [state.in].empty ())
 			break;
 		state.list [state.out].clear ();
@@ -278,7 +270,6 @@ stabilize_chip (state_type& state)
 {
 	for (auto index: range(0, netlist_6502_node_count))
 		state.list [state.out].insert (index);
-
 	recalculate_node_list (state);
 }
 
@@ -330,66 +321,34 @@ read_nodes (state_type& state) -> _Value
 	return value;
 }
 
-static inline void
-handle_memory (netlist_6502& nlsym)
-{
-	using namespace node_names;
-	if (get_node (*nlsym.state, rw))
-		nlsym.set(nlsym.bus_data, nlsym.memory()[nlsym.get(nlsym.bus_addr)]);
-	else
-		nlsym.memory()[nlsym.get(nlsym.bus_addr)] = nlsym.get(nlsym.bus_data);
-}
-
-using namespace node_names;
 static inline void 
-init_and_reset_chip (netlist_6502& nl)
+init_and_reset_chip (state_type& state)
 {
+	bool clk { false };
 	using namespace node_names;
 	/* set up data structures for efficient emulation */
 		
-	initialize_state (*nl.state);
+	initialize_state (state);
 
-	set_node (*nl.state, res, 0);
-	set_node (*nl.state, clk0, 1);
-	set_node (*nl.state, rdy, 1);
-	set_node (*nl.state, so, 0);
-	set_node (*nl.state, irq, 1);
-	set_node (*nl.state, nmi, 1);
+	set_node (state, res,		0);
+	set_node (state, clk0,	1);
+	set_node (state, rdy,		1);
+	set_node (state, so,		0);
+	set_node (state, irq,		1);
+	set_node (state, nmi,		1);
 
-	stabilize_chip (*nl.state);
-
-	/* hold RESET for 8 cycles */
-	for (int i = 0; i < 16; i++)
-		nl.step ();
-
-	/* release RESET */
-	set_node (*nl.state, res, 1);
-	recalculate_node_list (*nl.state);
-
+	stabilize_chip (state);
 }
 
 netlist_6502::netlist_6502 ()
 :	state { std::make_unique<state_type>() }
 { 
-	init_and_reset_chip(*this); 
+	init_and_reset_chip(*state); 
 }
 
 netlist_6502::~netlist_6502 ()
 { }
 
-void netlist_6502::step ()
-{
-	using namespace node_names;
-
-	auto clk = get_node(*state, clk0);
-	set_node (*state, clk0, !clk);
-
-	eval();
-
-	/* handle memory reads and writes */
-	if (!clk)
-		handle_memory (*this);
-}
 
 void netlist_6502::eval ()
 { 
@@ -398,6 +357,7 @@ void netlist_6502::eval ()
 
 auto netlist_6502::get (bits _bits) const -> uint16_t
 {
+	using namespace node_names;
 	switch(_bits)
 	{
 	case bits::bus_addr:
@@ -443,6 +403,7 @@ auto netlist_6502::get (bits _bits) const -> uint16_t
 
 void netlist_6502::set (bits _bits, uint16_t val)
 { 
+	using namespace node_names;
 	switch(_bits)
 	{
 	case bits::bus_addr:
@@ -484,9 +445,4 @@ void netlist_6502::set (bits _bits, uint16_t val)
 	default:
 		throw std::runtime_error("Not implemented.");
 	}
-}
-
-auto netlist_6502::memory () -> std::span<std::uint8_t>
-{
-	return std::span<std::uint8_t> (state->memory);
 }

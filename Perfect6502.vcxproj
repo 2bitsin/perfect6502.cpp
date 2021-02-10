@@ -169,10 +169,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\apple1basic\apple1basic.cpp" />
+    <ClCompile Include="src\apple1basic\apple1_basic.cpp" />
     <ClCompile Include="src\netlist_6502.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\apple1basic\apple1_basic_bin.hpp" />
     <ClInclude Include="src\netlist_6502.hpp" />
     <ClInclude Include="src\types.hpp" />
     <ClInclude Include="src\utils\bitmap.hpp" />
