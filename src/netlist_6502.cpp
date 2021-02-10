@@ -57,19 +57,19 @@ struct netlist_6502_static_state_type
 		for (auto& node : nodes_c1c2offset			)	node = 0;
 		for (auto& node : c1c2count							) node = 0;
 				
-		for (auto&& i : range (0, netlist_6502_transistor_count))
+		for (auto&& tindex : range (0, netlist_6502_transistor_count))
 		{
-			c1c2count [netlist_6502_transdefs [i].c1]++;
-			c1c2count [netlist_6502_transdefs [i].c2]++;
+			c1c2count [netlist_6502_transdefs [tindex].c1]++;
+			c1c2count [netlist_6502_transdefs [tindex].c2]++;
 		}			
 
 		/* then sum the counts to find each node's offset into the c1c2 array */
-		count_t c1c2offset = 0;
-		for (auto&& i : range (0, netlist_6502_node_count + 1))
+		count_t c1c2offset = 0u;
+		for (auto&& nindex : range (0, netlist_6502_node_count + 1))
 		{
-			nodes_c1c2offset [i] = c1c2offset;
-			if (i < netlist_6502_node_count)
-				c1c2offset += c1c2count [i];
+			nodes_c1c2offset [nindex] = c1c2offset;
+			if (nindex < netlist_6502_node_count)
+				c1c2offset += c1c2count [nindex];
 		}
 
 		for (auto& node : c1c2count)
