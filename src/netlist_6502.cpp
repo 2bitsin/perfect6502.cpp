@@ -1,4 +1,4 @@
-﻿/*
+/*
  Copyright (c) 2010,2014,2021 Michael Steil, Brian Silverman, Barry Silverman, Aleksandr Ševčenko
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -265,7 +265,7 @@ set_node (state_type& state, nodenum_t index, bool value)
 }
 
 static inline bool 
-get_node(state_type& state, nodenum_t index)
+get_node(const state_type& state, nodenum_t index)
 {
 	return state.nodes_value.get(index);
 }
@@ -274,6 +274,9 @@ template <auto... _Index, typename _Value>
 static inline void 
 write_nodes (state_type& state, _Value value)
 {
+	if constexpr (sizeof ... (_Index) == 1)
+		set_node(state, _Index..., value);
+	else
 	for(const auto index: { _Index ... })
 	{
 		set_node (state, index, value & 1u);
@@ -283,8 +286,12 @@ write_nodes (state_type& state, _Value value)
 
 template <auto... _Index, typename _Value>
 static inline void 
-read_nodes (state_type& state, _Value& value)
+read_nodes (const state_type& state, _Value& value)
 {
+	if constexpr (sizeof ... (_Index) == 1)
+		value = get_node(state, _Index...);
+	else
+	{
 	static constexpr auto q = sizeof...(_Index) - 1u;
 	for(const auto index: { _Index ... })
 	{
@@ -292,10 +299,11 @@ read_nodes (state_type& state, _Value& value)
 		value |= (get_node (state, index) << q);	
 	}	
 }
+}
 
 template <typename _Value, auto... _Index>
 static inline auto 
-read_nodes (state_type& state) -> _Value
+read_nodes (const state_type& state) -> _Value
 {
 	_Value value { 0u };
 	read_nodes<_Index...>(state, value);
