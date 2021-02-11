@@ -53,12 +53,55 @@ struct netlist_6502
 	netlist_6502(const netlist_6502&) = delete;
 
 	void eval();
-	auto get (bits) const -> uint16_t;
-	void set (bits, uint16_t);
+
+	void address	(std::uint16_t);
+	void data			(std::uint8_t);
+	void clock		(bool);
+	void ready		(bool);
+	void nmi			(bool);
+	void irq			(bool);
+	void reset		(bool);
+	void read			(bool);
+	void sync			(bool);
+
+	auto address	() const -> std::uint16_t;
+	auto data			() const -> std::uint8_t;
+	auto clock		() const -> bool;
+	auto ready		() const -> bool;
+	auto nmi			() const -> bool;
+	auto irq			() const -> bool;
+	auto reset		() const -> bool;
+	auto read			() const -> bool;
+	auto sync			() const -> bool;
+
+	auto a				() const -> std::uint8_t;
+	auto x				() const -> std::uint8_t;
+	auto y				() const -> std::uint8_t;
+	auto s				() const -> std::uint8_t;
+	auto p				() const -> std::uint8_t;
+	auto pc				() const -> std::uint16_t;							 
+	auto pch			() const -> std::uint8_t;
+	auto pcl			() const -> std::uint8_t;
+	auto ir				() const -> std::uint8_t;
+
+
+	void a				(std::uint8_t  val);
+	void x				(std::uint8_t  val);
+	void y				(std::uint8_t  val); 
+	void s				(std::uint8_t  val);
+	void p				(std::uint8_t  val);
+	void pc				(std::uint16_t val);							 
+	void pch			(std::uint8_t  val);
+	void pcl			(std::uint8_t  val);
+	void ir				(std::uint8_t  val);
+
+	auto get			(bits) const -> std::uint16_t;
+	void set			(bits, std::uint16_t);
 
 private:
 
 	std::unique_ptr<struct state_type> state;
 };
+
 
 
