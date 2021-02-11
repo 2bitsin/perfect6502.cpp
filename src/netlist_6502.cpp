@@ -351,8 +351,7 @@ void netlist_6502::eval ()
 auto netlist_6502::address () const -> std::uint16_t
 {
 	using namespace node_names;
-	//return read_nodes<uint16_t, ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state); 
-	return get(bits::bus_addr);
+	return read_nodes<uint16_t, ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state); 	
 }
 
 auto netlist_6502::data () const -> std::uint8_t
