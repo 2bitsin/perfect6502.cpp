@@ -54,16 +54,6 @@ struct netlist_6502
 
 	void eval();
 
-	void address	(std::uint16_t);
-	void data			(std::uint8_t);
-	void clock		(bool);
-	void ready		(bool);
-	void nmi			(bool);
-	void irq			(bool);
-	void reset		(bool);
-	void read			(bool);
-	void sync			(bool);
-
 	auto address	() const -> std::uint16_t;
 	auto data			() const -> std::uint8_t;
 	auto clock		() const -> bool;
@@ -73,7 +63,6 @@ struct netlist_6502
 	auto reset		() const -> bool;
 	auto read			() const -> bool;
 	auto sync			() const -> bool;
-
 	auto a				() const -> std::uint8_t;
 	auto x				() const -> std::uint8_t;
 	auto y				() const -> std::uint8_t;
@@ -84,19 +73,24 @@ struct netlist_6502
 	auto pcl			() const -> std::uint8_t;
 	auto ir				() const -> std::uint8_t;
 
-
-	void a				(std::uint8_t  val);
-	void x				(std::uint8_t  val);
-	void y				(std::uint8_t  val); 
-	void s				(std::uint8_t  val);
-	void p				(std::uint8_t  val);
-	void pc				(std::uint16_t val);							 
-	void pch			(std::uint8_t  val);
-	void pcl			(std::uint8_t  val);
-	void ir				(std::uint8_t  val);
-
-	auto get			(bits) const -> std::uint16_t;
-	void set			(bits, std::uint16_t);
+	void address	(std::uint16_t);
+	void data			(std::uint8_t);
+	void clock		(bool);
+	void ready		(bool);
+	void nmi			(bool);
+	void irq			(bool);
+	void reset		(bool);
+	void read			(bool);
+	void sync			(bool);
+	void a				(std::uint8_t );
+	void x				(std::uint8_t );
+	void y				(std::uint8_t ); 
+	void s				(std::uint8_t );
+	void p				(std::uint8_t );
+	void pc				(std::uint16_t);							 
+	void pch			(std::uint8_t );
+	void pcl			(std::uint8_t );
+	void ir				(std::uint8_t );
 
 private:
 
