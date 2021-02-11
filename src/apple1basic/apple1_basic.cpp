@@ -37,7 +37,7 @@ static netlist_6502 nlsym;
 void
 charout (netlist_6502& nlsym, char ch)
 {
-	auto S = (uint8_t)nlsym.get (nlsym.reg_s);
+	auto S = (uint8_t)nlsym.s();
 	auto a = 1 + memory [0x0100 + S + 1] | memory [0x0100 + ((S + 2) & 0xFF)] << 8;
 
 	/*
@@ -82,34 +82,34 @@ charout (netlist_6502& nlsym, char ch)
 void
 handle_monitor (netlist_6502& nlsym)
 {
-	auto a = nlsym.get (nlsym.bus_addr);
-	if (nlsym.get (nlsym.bus_rw))
+	auto a = nlsym.address();
+	if (nlsym.read())
 	{
-		nlsym.set (nlsym.bus_data, memory [a]);
+		nlsym.data(memory [a]);
 		if ((a & 0xFF1F) == 0xD010)
 		{
 			auto c = getchar ();
 			if (c == 10)
 				c = 13;
 			c |= 0x80;
-			nlsym.set (nlsym.bus_data, c);
+			nlsym.data(c);
 		}
 		if ((a & 0xFF1F) == 0xD011)
 		{
-			if (nlsym.get (nlsym.reg_pc) == 0xE006)
+			if (nlsym.pc() == 0xE006)
 				/* if the code is reading a character, we have one ready */
-				nlsym.set (nlsym.bus_data, 0x80);
+				nlsym.data(0x80);
 			else
 				/* if the code checks for a STOP condition, nothing is pressed */
-				nlsym.set (nlsym.bus_data, 0);
+				nlsym.data(0);
 		}
 		if ((a & 0xFF1F) == 0xD012)
 			/* 0x80 would mean we're not yet ready to receive a character */
-			nlsym.set (nlsym.bus_data, 0);
+			nlsym.data(0);
 	}
 	else
 	{
-		auto d = (uint8_t)nlsym.get (nlsym.bus_data);
+		auto d = (uint8_t)nlsym.data();
 		memory [a] = d;
 		if ((a & 0xFF1F) == 0xD012)
 		{
@@ -123,8 +123,8 @@ handle_monitor (netlist_6502& nlsym)
 
 void step (netlist_6502& nlsym)
 {
-	auto clk = nlsym.get (nlsym.bus_clock);
-	nlsym.set (nlsym.bus_clock, !clk);
+	auto clk = nlsym.clock();
+	nlsym.clock(!clk);
 	nlsym.eval ();
 	if (!clk)
 		handle_monitor (nlsym);
@@ -141,10 +141,8 @@ init_monitor (netlist_6502& nlsym)
 
 	/* hold RESET for 8 cycles */
 	for (int i = 0; i < 16; i++)
-	{
 		step (nlsym);
-	}
-	nlsym.set (nlsym.bus_reset, 1);
+	nlsym.reset(1);
 	/* release RESET */
 	step (nlsym);
 }
