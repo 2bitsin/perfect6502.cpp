@@ -273,6 +273,7 @@ get_node (const state_type& state, nodenum_t index)
 }
 
 template <auto... _Index, typename _Value>
+requires (sizeof...(_Index) <= sizeof(_Value) * 8)
 static inline void
 write_nodes (state_type& state, _Value value)
 {
@@ -287,6 +288,7 @@ write_nodes (state_type& state, _Value value)
 }
 
 template <auto... _Index, typename _Value>
+requires (sizeof...(_Index) <= sizeof(_Value) * 8)
 static inline void
 read_nodes (const state_type& state, _Value& value)
 {
@@ -478,8 +480,7 @@ auto netlist_6502::p () const -> std::uint8_t
 auto netlist_6502::pc () const -> std::uint16_t
 {
 	using namespace node_names;
-	//return read_nodes<uint8_t, pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7, pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state);
-	return get(bits::reg_pc);
+	return read_nodes<uint16_t, pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7, pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state);
 }
 
 auto netlist_6502::pch () const -> std::uint8_t
