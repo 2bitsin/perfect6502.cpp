@@ -357,22 +357,19 @@ auto netlist_6502::address () const -> std::uint16_t
 auto netlist_6502::data () const -> std::uint8_t
 {
 	using namespace node_names;
-	//return read_nodes<uint8_t, db0, db1, db2, db3, db4, db5, db6, db7>(*state);
-	return (std::uint8_t)get(bits::bus_data);
+	return read_nodes<uint8_t, db0, db1, db2, db3, db4, db5, db6, db7>(*state);	
 }
 
 void netlist_6502::address (std::uint16_t val) 
 { 
 	using namespace node_names;
-	//write_nodes<ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state, val);
-	return set(bits::bus_addr, val);
+	write_nodes<ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state, val);	
 }
 
 void netlist_6502::data (std::uint8_t val)
 { 
 	using namespace node_names;
-	//write_nodes<db0, db1, db2, db3, db4, db5, db6, db7>(*state, val);
-	return set(bits::bus_data, val);
+	write_nodes<db0, db1, db2, db3, db4, db5, db6, db7>(*state, val);	
 }
 
 auto netlist_6502::clock () const -> bool
