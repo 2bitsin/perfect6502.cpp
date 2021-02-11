@@ -374,7 +374,7 @@ void netlist_6502::data (std::uint8_t val)
 
 auto netlist_6502::clock () const -> bool
 {
-	return !!read_nodes<uint8_t, node_names::clk0>(*state);	
+	return read_nodes<bool, node_names::clk0>(*state);	
 }
 
 void netlist_6502::clock (bool value)
@@ -384,79 +384,80 @@ void netlist_6502::clock (bool value)
 
 auto netlist_6502::ready () const -> bool
 {
-	//return !!read_nodes<uint8_t, node_names::rdy>(*state);
+	return read_nodes<bool, node_names::rdy>(*state);
 }
 
 void netlist_6502::ready (bool value)
 { 
-	//write_nodes<node_names::rdy>(*state, value);
+	write_nodes<node_names::rdy>(*state, value);
 }
 
 auto netlist_6502::nmi () const -> bool
 {
-	//return !!read_nodes<uint8_t, node_names::nmi>(*state);
+	return read_nodes<bool, node_names::nmi>(*state);
 }
 
 void netlist_6502::nmi (bool value)
 { 
-	//write_nodes<node_names::nmi>(*state, value);
+	write_nodes<node_names::nmi>(*state, value);
 }
 
 auto netlist_6502::irq () const -> bool
 {
-	//return !!read_nodes<uint8_t, node_names::irq>(*state);
+	return read_nodes<bool, node_names::irq>(*state);
 }
 
 void netlist_6502::irq (bool value)
 { 
-	//write_nodes<node_names::irq>(*state, value);
+	write_nodes<node_names::irq>(*state, value);
 }
 
 auto netlist_6502::reset () const -> bool
 {
-	//return !!read_nodes<uint8_t, node_names::res>(*state);
-	return get(bits::bus_reset);
+	return read_nodes<bool, node_names::res>(*state);	
 }
 
 void netlist_6502::reset (bool value)
 { 
-	//write_nodes<node_names::res>(*state, value);
-	return set(bits::bus_reset, value);
+	write_nodes<node_names::res>(*state, value);	
 }
 
 auto netlist_6502::read () const -> bool
 {
-	//return !!read_nodes<uint8_t, node_names::rw>(*state);
-	return get(bits::bus_rw);
+	return read_nodes<bool, node_names::rw>(*state);	
 }
 
 void netlist_6502::read (bool value)
 { 
-	//write_nodes<node_names::rw>(*state, value);
-	return set(bits::bus_rw, value);
+	write_nodes<node_names::rw>(*state, value);	
 }
 
 auto netlist_6502::sync () const -> bool
 {
-	//return !!read_nodes<uint8_t, node_names::sync_>(*state);
+	return read_nodes<bool, node_names::sync_>(*state);
+}
+
+void netlist_6502::sync (bool val) 
+{
+	return write_nodes<node_names::sync_>(*state, val);
 }
 
 auto netlist_6502::a () const -> std::uint8_t
 {
 	using namespace node_names;
-	//return read_nodes<uint8_t, a0, a1, a2, a3, a4, a5, a6, a7>(*state);
+	return read_nodes<uint8_t, a0, a1, a2, a3, a4, a5, a6, a7>(*state);
 }
 
 auto netlist_6502::x () const -> std::uint8_t
 {
 	using namespace node_names;
-	//return read_nodes<uint8_t, x0, x1, x2, x3, x4, x5, x6, x7>(*state);
+	return read_nodes<uint8_t, x0, x1, x2, x3, x4, x5, x6, x7>(*state);
 }
 
 auto netlist_6502::y () const -> std::uint8_t
 {
 	using namespace node_names;
-	//return read_nodes<uint8_t, y0, y1, y2, y3, y4, y5, y6, y7>(*state);
+	return read_nodes<uint8_t, y0, y1, y2, y3, y4, y5, y6, y7>(*state);
 }
 
 auto netlist_6502::s () const -> std::uint8_t
@@ -468,7 +469,7 @@ auto netlist_6502::s () const -> std::uint8_t
 auto netlist_6502::p () const -> std::uint8_t
 {
 	using namespace node_names;
-	//return read_nodes<uint8_t, p0, p1, p2, p3, p4, p5, p6, p7>(*state);
+	return read_nodes<uint8_t, p0, p1, p2, p3, p4, p5, p6, p7>(*state);
 }
 
 auto netlist_6502::pc () const -> std::uint16_t
@@ -480,37 +481,37 @@ auto netlist_6502::pc () const -> std::uint16_t
 auto netlist_6502::pch () const -> std::uint8_t
 {
 	using namespace node_names;
-	//return read_nodes<uint8_t, pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state);
+	return read_nodes<uint8_t, pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state);
 }
 
 auto netlist_6502::pcl () const -> std::uint8_t
 {
 	using namespace node_names;
-	//return read_nodes<uint8_t, pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7>(*state);
+	return read_nodes<uint8_t, pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7>(*state);
 }
 
 auto netlist_6502::ir () const -> std::uint8_t
 {
 	using namespace node_names;
-	//return read_nodes<uint8_t, notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7>(*state)^0xff;
+	return read_nodes<uint8_t, notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7>(*state)^0xff;
 }
 
 void netlist_6502::a (std::uint8_t val)
 { 
 	using namespace node_names;
-	//return write_nodes<a0, a1, a2, a3, a4, a5, a6, a7>(*state, val);
+	return write_nodes<a0, a1, a2, a3, a4, a5, a6, a7>(*state, val);
 }
 
 void netlist_6502::x (std::uint8_t val)
 { 
 	using namespace node_names;
-	//return write_nodes<x0, x1, x2, x3, x4, x5, x6, x7>(*state, val);
+	return write_nodes<x0, x1, x2, x3, x4, x5, x6, x7>(*state, val);
 }
 
 void netlist_6502::y (std::uint8_t val)
 { 
 	using namespace node_names;
-	//return write_nodes<y0, y1, y2, y3, y4, y5, y6, y7>(*state, val);
+	return write_nodes<y0, y1, y2, y3, y4, y5, y6, y7>(*state, val);
 }
 
 void netlist_6502::s (std::uint8_t val)
@@ -548,11 +549,6 @@ void netlist_6502::ir (std::uint8_t val)
 { 
 	using namespace node_names;
 	//return write_nodes<notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7>(*state, std::uint8_t(val^0xff));
-}
-
-void netlist_6502::sync (bool value)
-{ 
-	//write_nodes<node_names::sync_>(*state, value);
 }
 
 auto netlist_6502::get (bits _bits) const -> uint16_t
