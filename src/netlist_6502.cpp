@@ -374,14 +374,12 @@ void netlist_6502::data (std::uint8_t val)
 
 auto netlist_6502::clock () const -> bool
 {
-	//return !!read_nodes<uint8_t, node_names::clk0>(*state);
-	return get(bits::bus_clock);
+	return !!read_nodes<uint8_t, node_names::clk0>(*state);	
 }
 
 void netlist_6502::clock (bool value)
 { 
-	//write_nodes<node_names::clk0>(*state, value);
-	return set(bits::bus_clock, value);
+	write_nodes<node_names::clk0>(*state, value);	
 }
 
 auto netlist_6502::ready () const -> bool
