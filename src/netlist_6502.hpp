@@ -25,32 +25,13 @@
 
 struct netlist_6502
 {
-	enum bits
-	{
-		reg_a,
-		reg_x,
-		reg_y,
-		reg_s,
-		reg_p,
-		reg_pc,
-		reg_pcl,
-		reg_pch,
-		reg_ir,
-		bus_addr,
-		bus_data,
-		bus_irq,
-		bus_nmi,
-		bus_reset,
-		bus_rw,
-		bus_sync,
-		bus_ready,
-		bus_clock
-	};
-
 	netlist_6502();
  ~netlist_6502();
 	
-	netlist_6502(const netlist_6502&) = delete;
+	netlist_6502 (const netlist_6502&) = delete;
+	netlist_6502& operator = (const netlist_6502&) = delete;
+	netlist_6502 (netlist_6502&&) = default;
+	netlist_6502& operator = (netlist_6502&&) = default;
 
 	void eval();
 
@@ -82,15 +63,15 @@ struct netlist_6502
 	void reset		(bool);
 	void read			(bool);
 	void sync			(bool);
-	void a				(std::uint8_t );
-	void x				(std::uint8_t );
-	void y				(std::uint8_t ); 
-	void s				(std::uint8_t );
-	void p				(std::uint8_t );
+	void a				(std::uint8_t);
+	void x				(std::uint8_t);
+	void y				(std::uint8_t); 
+	void s				(std::uint8_t);
+	void p				(std::uint8_t);
 	void pc				(std::uint16_t);							 
-	void pch			(std::uint8_t );
-	void pcl			(std::uint8_t );
-	void ir				(std::uint8_t );
+	void pch			(std::uint8_t);
+	void pcl			(std::uint8_t);
+	void ir				(std::uint8_t);
 
 private:
 
