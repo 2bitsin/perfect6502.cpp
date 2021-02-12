@@ -104,8 +104,8 @@ static constexpr inline netlist_6502_static_state_type st_state;
 
 struct state_type
 {
-	bitmap<netlist_6502_node_count>	nodes_pullup;
-	bitmap<netlist_6502_node_count>	nodes_pulldn;
+	bitmap<netlist_6502_node_count>	nodes_pullu;
+	bitmap<netlist_6502_node_count>	nodes_pulld;
 	bitmap<netlist_6502_node_count>	nodes_value;
 	bitmap<netlist_6502_transistor_count>	trans_state;
 	array_set<nodenum_t, netlist_6502_node_count> group;
@@ -140,9 +140,9 @@ group_add_node (state_type& state, nodenum_t nindex)
 
 	switch (state.group_contains_value)
 	{
-	case contains_nothing:	if (state.nodes_pulldn.get (nindex)) inplace_max (state.group_contains_value, contains_pulldown);
-	case contains_hi:				if (state.nodes_pullup.get (nindex)) inplace_max (state.group_contains_value, contains_pullup);
-	case contains_pullup:		if (state.nodes_value	.get (nindex)) inplace_max (state.group_contains_value, contains_hi);
+	case contains_nothing:	if (state.nodes_pulld.get (nindex)) inplace_max (state.group_contains_value, contains_pulldown);
+	case contains_hi:				if (state.nodes_pullu.get (nindex)) inplace_max (state.group_contains_value, contains_pullup);
+	case contains_pullup:		if (state.nodes_value.get (nindex)) inplace_max (state.group_contains_value, contains_hi);
 	default:
 		break;
 	}
@@ -235,10 +235,10 @@ static inline void
 write_nodes (state_type& state, _Value value)
 {
 	if constexpr (sizeof...(_Index) != 1)		
-		state.nodes_pulldn.set_bits<_Index...>(_Value(value ^ ~_Value(0u)));
+		state.nodes_pulld.set_bits<_Index...>(_Value(value ^ ~_Value(0u)));
 	else
-		state.nodes_pulldn.set_bits<_Index...>(!value);
-	state.nodes_pullup.set_bits<_Index...>(value);
+		state.nodes_pulld.set_bits<_Index...>(!value);
+	state.nodes_pullu.set_bits<_Index...>(value);
 	for (const auto index : { _Index ... })
 		state.list [state.out].insert (index);
 }
@@ -266,8 +266,8 @@ netlist_6502::netlist_6502 ()
 {
 	auto& state = *this->state;
 
-	state.nodes_pullup = netlist_6502_node_is_pullup;
-	state.nodes_pulldn.clear ();
+	state.nodes_pullu = netlist_6502_node_is_pullup;
+	state.nodes_pulld.clear ();
 	state.nodes_value.clear ();
 	state.trans_state.clear ();
 	state.group.clear ();
