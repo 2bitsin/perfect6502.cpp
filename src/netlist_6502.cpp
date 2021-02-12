@@ -51,11 +51,11 @@ struct netlist_6502_static_state_type
 
 		count_t c1c2count [netlist_6502_node_count];
 
-		for (auto& list : nodes_gates)	list.clear ();
-		for (auto& list : nodes_dependant [0])	list.clear ();
-		for (auto& list : nodes_dependant [1])	list.clear ();
-		for (auto& node : nodes_c1c2offset)	node = 0;
-		for (auto& node : c1c2count) node = 0;
+		for (auto& list : nodes_gates					)	list.clear ();
+		for (auto& list : nodes_dependant [0]	)	list.clear ();
+		for (auto& list : nodes_dependant [1]	)	list.clear ();
+		for (auto& node : nodes_c1c2offset		)	node = 0;
+		for (auto& node : c1c2count						) node = 0;
 
 		for (auto&& tindex : range (0, netlist_6502_transistor_count))
 		{
@@ -105,7 +105,7 @@ static constexpr inline netlist_6502_static_state_type st_state;
 struct state_type
 {
 	bitmap<netlist_6502_node_count>	nodes_pullup;
-	bitmap<netlist_6502_node_count>	nodes_pulldown;
+	bitmap<netlist_6502_node_count>	nodes_pulldn;
 	bitmap<netlist_6502_node_count>	nodes_value;
 	bitmap<netlist_6502_transistor_count>	trans_state;
 	array_set<nodenum_t, netlist_6502_node_count> group;
@@ -121,7 +121,7 @@ void initialize_state (state_type& state)
 
 	/* allocate state */
 	state.nodes_pullup = netlist_6502_node_is_pullup;
-	state.nodes_pulldown.clear ();
+	state.nodes_pulldn.clear ();
 	state.nodes_value.clear ();
 	state.trans_state.clear ();
 	state.group.clear ();
@@ -133,43 +133,43 @@ void initialize_state (state_type& state)
 
 
 static inline void
-group_add_node (state_type& state, nodenum_t n)
+group_add_node (state_type& state, nodenum_t nindex)
 {
 	/*
 	 * We need to stop at vss and vcc, otherwise we'll revisit other groups
 	 * with the same value - just because they all derive their value from
 	 * the fact that they are connected to vcc or vss.
 	 */
-	if (n == node_names::vss)
+	if (nindex == node_names::vss)
 	{
 		state.group_contains_value = contains_vss;
 		return;
 	}
 
-	if (n == node_names::vcc)
+	if (nindex == node_names::vcc)
 	{
 		if (state.group_contains_value != contains_vss)
 			state.group_contains_value = contains_vcc;
 		return;
 	}
 
-	if (state.group.contains (n))
+	if (state.group.contains (nindex))
 		return;
 
-	state.group.insert (n);
+	state.group.insert (nindex);
 
 	switch (state.group_contains_value)
 	{
-	case contains_nothing:	if (state.nodes_pulldown.get (n)) inplace_max (state.group_contains_value, contains_pulldown);
-	case contains_hi:				if (state.nodes_pullup.get (n))	inplace_max (state.group_contains_value, contains_pullup);
-	case contains_pullup:		if (state.nodes_value.get (n))	inplace_max (state.group_contains_value, contains_hi);
+	case contains_nothing:	if (state.nodes_pulldn	.get (nindex)) inplace_max (state.group_contains_value, contains_pulldown);
+	case contains_hi:				if (state.nodes_pullup		.get (nindex)) inplace_max (state.group_contains_value, contains_pullup);
+	case contains_pullup:		if (state.nodes_value			.get (nindex)) inplace_max (state.group_contains_value, contains_hi);
 	default:
 		break;
 	}
 
 	/* revisit all transistors that control this node */
 	auto&& offset = st_state.nodes_c1c2offset;
-	for (auto&& tindex : range (offset [n], offset [n + 1]))
+	for (auto&& tindex : range (offset [nindex], offset [nindex + 1]))
 	{
 		auto c = st_state.nodes_c1c2s [tindex];
 		/* if the transistor connects c1 and c2... */
@@ -207,6 +207,7 @@ recalculate_node (state_type& state, nodenum_t node)
 	 * - collect all nodes behind toggled transistors
 	 *   for the next run
 	 */
+
 	for (auto&& nindex : state.group)
 	{
 		if (state.nodes_value.get (nindex) == new_value)
@@ -260,7 +261,7 @@ static inline void
 set_node (state_type& state, nodenum_t index, bool value)
 {
 	state.nodes_pullup.set (index, value);
-	state.nodes_pulldown.set (index, !value);
+	state.nodes_pulldn.set (index, !value);
 	state.list [state.out].insert (index);
 
 	recalculate_node_list (state);
@@ -280,11 +281,13 @@ write_nodes (state_type& state, _Value value)
 	if constexpr (sizeof ... (_Index) == 1)
 		set_node (state, _Index..., value);
 	else
+	{
+		state.nodes_pullup.set_bits<_Index...>(value);
+		state.nodes_pulldn.set_bits<_Index...>(value ^ 0xffu);
 		for (const auto index : { _Index ... })
-		{
-			set_node (state, index, value & 1u);
-			value >>= 1u;
-		}
+			state.list [state.out].insert (index);
+		recalculate_node_list (state);
+	}
 }
 
 template <auto... _Index, typename _Value>
@@ -294,15 +297,8 @@ read_nodes (const state_type& state, _Value& value)
 {
 	if constexpr (sizeof ... (_Index) == 1)
 		value = get_node (state, _Index...);
-	else
-	{
-		static constexpr auto q = sizeof...(_Index) - 1u;
-		for (const auto index : { _Index ... })
-		{
-			value >>= 1u;
-			value |= (get_node (state, index) << q);
-		}
-	}
+	else 
+		value = state.nodes_value.get_bits<_Value, _Index...>();
 }
 
 template <typename _Value, auto... _Index>
@@ -316,19 +312,18 @@ read_nodes (const state_type& state) -> _Value
 
 static inline void
 init_and_reset_chip (state_type& state)
-{
-	bool clk{ false };
+{	
 	using namespace node_names;
 	/* set up data structures for efficient emulation */
 
 	initialize_state (state);
 
-	set_node (state, res, 0);
-	set_node (state, clk0, 1);
-	set_node (state, rdy, 1);
-	set_node (state, so, 0);
-	set_node (state, irq, 1);
-	set_node (state, nmi, 1);
+	set_node (state, res,		0);
+	set_node (state, clk0,  1);
+	set_node (state, rdy,		1);
+	set_node (state, so,		0);
+	set_node (state, irq,		1);
+	set_node (state, nmi,		1);
 
 	stabilize_chip (state);
 }
@@ -351,7 +346,10 @@ void netlist_6502::eval ()
 auto netlist_6502::address () const -> std::uint16_t
 {
 	using namespace node_names;
-	return read_nodes<uint16_t, ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state); 	
+	const auto lsb = read_nodes<uint8_t, ab0, ab1, ab2,  ab3,  ab4,  ab5,  ab6,  ab7 >(*state);
+	const auto msb = read_nodes<uint8_t, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state);
+	return lsb + 0x100 * msb; 
+				 
 }
 
 auto netlist_6502::data () const -> std::uint8_t
@@ -362,8 +360,9 @@ auto netlist_6502::data () const -> std::uint8_t
 
 void netlist_6502::address (std::uint16_t val) 
 { 
-	using namespace node_names;
-	write_nodes<ab0, ab1, ab2, ab3, ab4, ab5, ab6, ab7, ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state, val);	
+	using namespace node_names;	
+	write_nodes<ab0, ab1, ab2,  ab3,  ab4,  ab5,  ab6,  ab7 >(*state, (val >> 0u) & 0xffu);	 
+	write_nodes<ab8, ab9, ab10, ab11, ab12, ab13, ab14, ab15>(*state, (val >> 8u) & 0xffu);	
 }
 
 void netlist_6502::data (std::uint8_t val)
@@ -475,7 +474,7 @@ auto netlist_6502::p () const -> std::uint8_t
 auto netlist_6502::pc () const -> std::uint16_t
 {
 	using namespace node_names;
-	return read_nodes<uint16_t, pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7, pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state);
+	return pcl() + 0x100*pch();
 }
 
 auto netlist_6502::pch () const -> std::uint8_t
@@ -529,7 +528,8 @@ void netlist_6502::p (std::uint8_t val)
 void netlist_6502::pc (std::uint16_t val)
 { 
 	using namespace node_names;
-	return write_nodes<pcl0, pcl1, pcl2, pcl3, pcl4, pcl5, pcl6, pcl7, pch0, pch1, pch2, pch3, pch4, pch5, pch6, pch7>(*state, val);
+	pcl((val >> 0u) & 0xffu);
+	pch((val >> 8u) & 0xffu);
 }
 
 void netlist_6502::pch (std::uint8_t val)

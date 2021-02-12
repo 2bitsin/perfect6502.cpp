@@ -28,6 +28,8 @@
 #include <initializer_list>
 #include <algorithm>
 
+#include "misc.hpp"
+
 template <std::size_t _Num_bits, typename _Word_type = std::uint64_t>
 struct bitmap
 {
@@ -77,6 +79,56 @@ struct bitmap
 		for (auto&& cell : store) 
 			cell = word_type { 0 };
 	}
+
+	template <typename _New_type, auto... _Index>
+	requires (sizeof... (_Index) <= sizeof (_New_type) * 8 && sizeof... (_Index) > 1u)
+	constexpr auto get_bits() const 
+	{
+		if constexpr (is_aligned_single_byte<_Index...>())
+		{
+			static constexpr auto bits_index = get_first_index<_Index...>();
+			static constexpr auto word_index = bits_index / word_size;
+			static constexpr auto word_shift = bits_index % word_size;
+			return _New_type ((store[word_index] >> word_shift) & 0xffu);
+		}
+		else
+		{
+			auto value = _New_type { 0u };
+			static constexpr auto q = sizeof...(_Index) - 1u;
+			for (const auto index : { _Index ... })
+			{
+				value >>= 1u;
+				value |= (get (index) << q);
+			}
+			return value;		
+		}
+	}
+
+	template <auto... _Index, typename _New_type>
+	requires (sizeof... (_Index) <= sizeof (_New_type) * 8 && sizeof... (_Index) > 1u)
+	constexpr auto set_bits(_New_type&& value) 
+	{
+		if constexpr (is_aligned_single_byte<_Index...>())
+		{
+			static constexpr auto bits_index = get_first_index<_Index...>();
+			static constexpr auto word_index = bits_index / word_size;
+			static constexpr auto word_shift = bits_index % word_size;
+			static constexpr auto mask = word_type{ 0xffu } << word_shift;
+			store[word_index] = (store[word_index] & ~mask) | ((word_type { value } << word_shift) & mask);
+		}
+		else
+		{
+			auto value = _New_type { 0u };
+			static constexpr auto q = sizeof...(_Index) - 1u;
+			for (const auto index : { _Index ... })
+			{
+				value >>= 1u;
+				value |= (get (index) << q);
+			}
+			return value;		
+		}
+	}
+
 
 private:
 

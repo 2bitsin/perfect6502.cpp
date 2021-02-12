@@ -136,10 +136,12 @@ struct array_list
 	{
 		return &_data[0];
 	}
+
 	constexpr auto* begin() const 
 	{
 		return &_data[0];
 	}
+
 	constexpr auto* cbegin() const 
 	{
 		return &_data[0];
@@ -149,16 +151,19 @@ struct array_list
 	{
 		return &_data[size()];
 	}
+
 	constexpr auto* end() const 
 	{
 		return &_data[size()];
 	}
+
 	constexpr auto* cend() const 
 	{
 		return &_data[size()];
 	}
 
-	constexpr auto indexes() const {
+	constexpr auto indexes() const 
+	{
 		return range<std::size_t> { 0u, size() };
 	}
 
