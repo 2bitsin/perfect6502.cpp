@@ -81,10 +81,12 @@ struct bitmap
 	}
 
 	template <typename _New_type, auto... _Index>
-	requires (sizeof... (_Index) <= sizeof (_New_type) * 8 && sizeof... (_Index) > 1u)
+	requires (sizeof... (_Index) <= sizeof (_New_type) * 8 && sizeof... (_Index) >= 1u)
 	constexpr auto get_bits() const 
 	{
-		if constexpr (is_aligned_single_byte<_Index...>())
+		if constexpr (sizeof...(_Index) == 1u)
+			return get(_Index...);
+		else if constexpr (is_aligned_single_byte<_Index...>())
 		{
 			static constexpr auto bits_index = get_first_index<_Index...>();
 			static constexpr auto word_index = bits_index / word_size;
@@ -105,10 +107,12 @@ struct bitmap
 	}
 
 	template <auto... _Index, typename _New_type>
-	requires (sizeof... (_Index) <= sizeof (_New_type) * 8 && sizeof... (_Index) > 1u)
+	requires (sizeof... (_Index) <= sizeof (_New_type) * 8 && sizeof... (_Index) >= 1u)
 	constexpr auto set_bits(_New_type&& value) 
 	{
-		if constexpr (is_aligned_single_byte<_Index...>())
+		if constexpr (sizeof...(_Index) == 1u)
+			set(_Index..., value);
+		else if constexpr (is_aligned_single_byte<_Index...>())
 		{
 			static constexpr auto bits_index = get_first_index<_Index...>();
 			static constexpr auto word_index = bits_index / word_size;
