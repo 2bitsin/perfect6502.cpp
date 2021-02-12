@@ -213,7 +213,7 @@ recalculate_node_list (state_type& state)
 		
 		if (state.outputs.empty ())
 			break;
-		auto inputs = state.outputs;
+		auto inputs = state.outputs.as_array();
 		state.outputs.clear ();
 
 		/*
