@@ -243,7 +243,6 @@ write_nodes (state_type& state, _Value value)
 	state.nodes_pullup.set_bits<_Index...>(value);
 	for (const auto index : { _Index ... })
 		state.list [state.out].insert (index);
-	recalculate_node_list (state);
 }
 
 template <auto... _Index, typename _Value>
@@ -251,10 +250,7 @@ requires (sizeof...(_Index) <= sizeof(_Value) * 8)
 static inline void
 read_nodes (const state_type& state, _Value& value)
 {
-	//if constexpr (sizeof ... (_Index) == 1)
-	//	value = state.nodes_value.get (_Index...);	
-	//else 
-		value = state.nodes_value.get_bits<_Value, _Index...>();
+	value = state.nodes_value.get_bits<_Value, _Index...>();
 }
 
 template <typename _Value, auto... _Index>
