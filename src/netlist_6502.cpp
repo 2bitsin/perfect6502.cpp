@@ -135,10 +135,8 @@ group_add_node (state_type& state, nodenum_t nindex)
 		return;
 	}
 
-	if (state.group.contains (nindex))
+	if (!state.group.insert (nindex))
 		return;
-
-	state.group.insert (nindex);
 
 	switch (state.group_contains_value)
 	{
