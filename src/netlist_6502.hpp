@@ -44,6 +44,7 @@ struct netlist_6502
 	auto reset		() const -> bool;
 	auto read			() const -> bool;
 	auto sync			() const -> bool;
+	auto so				() const -> bool;
 	auto a				() const -> std::uint8_t;
 	auto x				() const -> std::uint8_t;
 	auto y				() const -> std::uint8_t;
@@ -63,6 +64,7 @@ struct netlist_6502
 	void reset		(bool);
 	void read			(bool);
 	void sync			(bool);
+	void so				(bool);
 	void a				(std::uint8_t);
 	void x				(std::uint8_t);
 	void y				(std::uint8_t); 

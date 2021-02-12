@@ -114,24 +114,6 @@ struct state_type
 	unsigned in, out;
 };
 
-
-void initialize_state (state_type& state)
-{
-	using namespace node_names;
-
-	/* allocate state */
-	state.nodes_pullup = netlist_6502_node_is_pullup;
-	state.nodes_pulldn.clear ();
-	state.nodes_value.clear ();
-	state.trans_state.clear ();
-	state.group.clear ();
-	state.list [0].clear ();
-	state.list [1].clear ();
-	state.in = 0;
-	state.out = 1;
-}
-
-
 static inline void
 group_add_node (state_type& state, nodenum_t nindex)
 {
@@ -249,45 +231,25 @@ recalculate_node_list (state_type& state)
 	state.list [state.out].clear ();
 }
 
-static inline void
-stabilize_chip (state_type& state)
-{
-	for (auto index : range (0, netlist_6502_node_count))
-		state.list [state.out].insert (index);
-	recalculate_node_list (state);
-}
-
-static inline void
-set_node (state_type& state, nodenum_t index, bool value)
-{
-	state.nodes_pullup.set (index, value);
-	state.nodes_pulldn.set (index, !value);
-	state.list [state.out].insert (index);
-
-	recalculate_node_list (state);
-}
-
-static inline bool
-get_node (const state_type& state, nodenum_t index)
-{
-	return state.nodes_value.get (index);
-}
-
 template <auto... _Index, typename _Value>
 requires (sizeof...(_Index) <= sizeof(_Value) * 8)
 static inline void
 write_nodes (state_type& state, _Value value)
 {
 	if constexpr (sizeof ... (_Index) == 1)
-		set_node (state, _Index..., value);
+	{
+		state.nodes_pullup.set(_Index...,  value);
+		state.nodes_pulldn.set(_Index..., !value);
+		state.list [state.out].insert (_Index...);
+	}
 	else
 	{
 		state.nodes_pullup.set_bits<_Index...>(value);
 		state.nodes_pulldn.set_bits<_Index...>(value ^ 0xffu);
 		for (const auto index : { _Index ... })
 			state.list [state.out].insert (index);
-		recalculate_node_list (state);
 	}
+	recalculate_node_list (state);
 }
 
 template <auto... _Index, typename _Value>
@@ -296,7 +258,7 @@ static inline void
 read_nodes (const state_type& state, _Value& value)
 {
 	if constexpr (sizeof ... (_Index) == 1)
-		value = get_node (state, _Index...);
+		value = state.nodes_value.get (_Index...);	
 	else 
 		value = state.nodes_value.get_bits<_Value, _Index...>();
 }
@@ -310,28 +272,33 @@ read_nodes (const state_type& state) -> _Value
 	return value;
 }
 
-static inline void
-init_and_reset_chip (state_type& state)
-{	
-	using namespace node_names;
-	/* set up data structures for efficient emulation */
-
-	initialize_state (state);
-
-	set_node (state, res,		0);
-	set_node (state, clk0,  1);
-	set_node (state, rdy,		1);
-	set_node (state, so,		0);
-	set_node (state, irq,		1);
-	set_node (state, nmi,		1);
-
-	stabilize_chip (state);
-}
 
 netlist_6502::netlist_6502 ()
-	: state{ std::make_unique<state_type> () }
+: state{ std::make_unique<state_type> () }
 {
-	init_and_reset_chip (*state);
+	auto& state = *this->state;
+
+	state.nodes_pullup = netlist_6502_node_is_pullup;
+	state.nodes_pulldn.clear ();
+	state.nodes_value.clear ();
+	state.trans_state.clear ();
+	state.group.clear ();
+	state.list [0].clear ();
+	state.list [1].clear ();
+	state.in = 0;
+	state.out = 1;
+
+	reset	(0);
+	clock	(1);
+	ready	(1);
+	irq	(1);
+	nmi	(1);
+	so (0);
+
+	for (auto index : range (0, netlist_6502_node_count))
+		state.list [state.out].insert (index);
+
+	eval();
 }
 
 netlist_6502::~netlist_6502 ()
@@ -436,9 +403,19 @@ auto netlist_6502::sync () const -> bool
 	return read_nodes<bool, node_names::sync_>(*state);
 }
 
+auto netlist_6502::so () const -> bool
+{
+	return read_nodes<bool, node_names::so>(*state);
+}
+
 void netlist_6502::sync (bool val) 
 {
 	return write_nodes<node_names::sync_>(*state, val);
+}
+
+void netlist_6502::so (bool val)
+{ 
+	return write_nodes<node_names::so>(*state, val);
 }
 
 auto netlist_6502::a () const -> std::uint8_t
