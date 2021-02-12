@@ -142,21 +142,21 @@ group_add_node (state_type& state, nodenum_t nindex)
 
 	switch (state.group_contains_value)
 	{
-	case contains_nothing:	if (state.nodes_pulldn	.get (nindex)) inplace_max (state.group_contains_value, contains_pulldown);
-	case contains_hi:				if (state.nodes_pullup		.get (nindex)) inplace_max (state.group_contains_value, contains_pullup);
-	case contains_pullup:		if (state.nodes_value			.get (nindex)) inplace_max (state.group_contains_value, contains_hi);
+	case contains_nothing:	if (state.nodes_pulldn.get (nindex)) inplace_max (state.group_contains_value, contains_pulldown);
+	case contains_hi:				if (state.nodes_pullup.get (nindex)) inplace_max (state.group_contains_value, contains_pullup);
+	case contains_pullup:		if (state.nodes_value	.get (nindex)) inplace_max (state.group_contains_value, contains_hi);
 	default:
 		break;
 	}
 
 	/* revisit all transistors that control this node */
 	auto&& offset = st_state.nodes_c1c2offset;
-	for (auto&& tindex : range (offset [nindex], offset [nindex + 1]))
+	for (auto&& tindex : range (offset [nindex], offset [nindex+1]))
 	{
-		auto c = st_state.nodes_c1c2s [tindex];
+		auto&& [tindex0, nindex] = st_state.nodes_c1c2s [tindex];
 		/* if the transistor connects c1 and c2... */
-		if (state.trans_state.get (c.first))
-			group_add_node (state, c.second);
+		if (state.trans_state.get (tindex0))
+			group_add_node (state, nindex);
 	}
 }
 
@@ -273,10 +273,8 @@ netlist_6502::netlist_6502 ()
 	state.nodes_value.clear ();
 	state.trans_state.clear ();
 	state.group.clear ();
-	state.list [0].clear ();
-	state.list [1].clear ();
-	state.in = 0;
-	state.out = 1;
+	state.list [state.in  = 0].clear ();
+	state.list [state.out = 1].clear ();
 
 	reset	(0);
 	clock	(1);
