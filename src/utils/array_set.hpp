@@ -88,6 +88,9 @@ struct array_set
 		return marks.get(v);
 	}
 
+	auto&& as_array() const { return store; }
+	auto&& as_bitmap()	const { return marks; }
+
 	decltype(auto) begin() { return store.begin () ;}
 	decltype(auto) begin() const { return store.begin () ;}
 	decltype(auto) cbegin() const { return store.cbegin () ;}

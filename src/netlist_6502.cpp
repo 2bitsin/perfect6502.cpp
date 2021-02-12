@@ -109,8 +109,7 @@ struct state_type
 	bitmap<netlist_6502_node_count>	nodes_value;
 	bitmap<netlist_6502_transistor_count>	trans_state;
 	array_set<nodenum_t, netlist_6502_node_count> group;
-	array_set<nodenum_t, netlist_6502_node_count> list [2];
-	unsigned in, out;
+	array_set<nodenum_t, netlist_6502_node_count> outputs;
 	group_contains_value_t group_contains_value;
 };
 
@@ -196,7 +195,7 @@ recalculate_node (state_type& state, nodenum_t node)
 		for (auto&& tindex : st_state.nodes_gates [nindex])
 			state.trans_state.set (tindex, new_value);
 		for (auto&& nindex : st_state.nodes_dependant [new_value][nindex])
-			state.list [state.out].insert (nindex);
+			state.outputs.insert (nindex);
 	}
 }
 
@@ -211,10 +210,11 @@ recalculate_node_list (state_type& state)
 		 * the data storage of the primary list as the
 		 * secondary list
 		 */
-		std::swap (state.in, state.out);
-		if (state.list [state.in].empty ())
+		
+		if (state.outputs.empty ())
 			break;
-		state.list [state.out].clear ();
+		auto inputs = state.outputs.as_array();
+		state.outputs.clear ();
 
 		/*
 		 * for all nodes, follow their paths through
@@ -223,39 +223,42 @@ recalculate_node_list (state_type& state)
 		 * all transistors controlled by this path, collecting
 		 * all nodes that changed because of it for the next run
 		 */
-		for (auto&& nindex : state.list [state.in])
+		for (auto&& nindex : inputs)
 			recalculate_node (state, nindex);
 	}
-	state.list [state.out].clear ();
+	state.outputs.clear ();
 }
 
-template <auto... _Index, typename _Value>
-requires (sizeof...(_Index) <= sizeof(_Value) * 8)
+template <auto... _Index, typename _New_value>
+requires (sizeof...(_Index) <= sizeof(_New_value) * 8)
 static inline void
-write_nodes (state_type& state, _Value value)
+write_nodes (state_type& state, _New_value value)
 {
+	_New_value not_value {};
 	if constexpr (sizeof...(_Index) != 1)		
-		state.nodes_pulld.set_bits<_Index...>(_Value(value ^ ~_Value(0u)));
+		not_value = _New_value(value ^ ~_New_value(0u));
 	else
-		state.nodes_pulld.set_bits<_Index...>(!value);
+		not_value = !value;
+
 	state.nodes_pullu.set_bits<_Index...>(value);
+	state.nodes_pulld.set_bits<_Index...>(not_value);
 	for (const auto index : { _Index ... })
-		state.list [state.out].insert (index);
+		state.outputs.insert (index);
 }
 
-template <auto... _Index, typename _Value>
-requires (sizeof...(_Index) <= sizeof(_Value) * 8)
+template <auto... _Index, typename _New_value>
+requires (sizeof...(_Index) <= sizeof(_New_value) * 8)
 static inline void
-read_nodes (const state_type& state, _Value& value)
+read_nodes (const state_type& state, _New_value& value)
 {
-	value = state.nodes_value.get_bits<_Value, _Index...>();
+	value = state.nodes_value.get_bits<_New_value, _Index...>();
 }
 
-template <typename _Value, auto... _Index>
+template <typename _New_value, auto... _Index>
 static inline auto
-read_nodes (const state_type& state) -> _Value
+read_nodes (const state_type& state) -> _New_value
 {
-	_Value value{ 0u };
+	_New_value value{ 0u };
 	read_nodes<_Index...> (state, value);
 	return value;
 }
@@ -271,8 +274,8 @@ netlist_6502::netlist_6502 ()
 	state.nodes_value.clear ();
 	state.trans_state.clear ();
 	state.group.clear ();
-	state.list [state.in  = 0].clear ();
-	state.list [state.out = 1].clear ();
+	state.outputs.clear ();
+	
 
 	reset	(0);
 	clock	(1);
@@ -282,7 +285,7 @@ netlist_6502::netlist_6502 ()
 	so (0);
 
 	for (auto index : range (0, netlist_6502_node_count))
-		state.list [state.out].insert (index);
+		state.outputs.insert (index);
 
 	eval();
 }
