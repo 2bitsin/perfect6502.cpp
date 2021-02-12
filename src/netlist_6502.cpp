@@ -109,9 +109,9 @@ struct state_type
 	bitmap<netlist_6502_node_count>	nodes_value;
 	bitmap<netlist_6502_transistor_count>	trans_state;
 	array_set<nodenum_t, netlist_6502_node_count> group;
-	group_contains_value_t group_contains_value;
 	array_set<nodenum_t, netlist_6502_node_count> list [2];
 	unsigned in, out;
+	group_contains_value_t group_contains_value;
 };
 
 static inline void
