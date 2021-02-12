@@ -225,8 +225,8 @@ recalculate_node_list (state_type& state)
 		 * all transistors controlled by this path, collecting
 		 * all nodes that changed because of it for the next run
 		 */
-		for (auto&& node : state.list [state.in])
-			recalculate_node (state, node);
+		for (auto&& nindex : state.list [state.in])
+			recalculate_node (state, nindex);
 	}
 	state.list [state.out].clear ();
 }
