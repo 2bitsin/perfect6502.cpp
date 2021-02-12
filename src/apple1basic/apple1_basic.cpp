@@ -30,6 +30,7 @@
 
 #include "../netlist_6502.hpp"
 #include "apple1_basic_bin.hpp"
+#include "../utils/array_list.hpp"
 
 static std::uint8_t memory [0x10000];
 static netlist_6502 nlsym;

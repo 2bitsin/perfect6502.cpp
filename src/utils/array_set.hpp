@@ -38,10 +38,10 @@ struct array_set
 	constexpr array_set(std::initializer_list<value_type> values)
 	{
 		for(auto&& v: values)
-			insert(std::move (v));
+			insert_unique(std::move (v));
 	}
 
-	constexpr bool insert(value_type v)
+	constexpr bool insert_unique(value_type v)
 	{
 		if (!marks.get(v))
 		{

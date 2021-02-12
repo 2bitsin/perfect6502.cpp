@@ -92,9 +92,9 @@ struct netlist_6502_static_state_type
 				const auto cond1 = !one_of<vss, vcc> (c1);
 				const auto cond2 = !one_of<vss, vcc> (c2);
 
-				if (cond1) nodes_dependant [0][nindex].push_unique (c1);
-				if (cond2) nodes_dependant [0][nindex].push_unique (c2);
-				nodes_dependant [1][nindex].push_unique (cond1 ? c1 : c2);
+				if (cond1) nodes_dependant [0][nindex].insert_unique (c1);
+				if (cond2) nodes_dependant [0][nindex].insert_unique (c2);
+				nodes_dependant [1][nindex].insert_unique (cond1 ? c1 : c2);
 			}
 		}
 	}
@@ -134,7 +134,7 @@ group_add_node (state_type& state, nodenum_t nindex)
 		return;
 	}
 
-	if (!state.group.insert (nindex))
+	if (!state.group.insert_unique (nindex))
 		return;
 
 	switch (state.group_contains_value)
@@ -195,7 +195,7 @@ recalculate_node (state_type& state, nodenum_t node)
 		for (auto&& tindex : st_state.nodes_gates [nindex])
 			state.trans_state.set (tindex, new_value);
 		for (auto&& nindex : st_state.nodes_dependant [new_value][nindex])
-			state.outputs.insert (nindex);
+			state.outputs.insert_unique (nindex);
 	}
 }
 
@@ -213,7 +213,7 @@ recalculate_node_list (state_type& state)
 		
 		if (state.outputs.empty ())
 			break;
-		auto inputs = state.outputs.as_array();
+		auto inputs = state.outputs;
 		state.outputs.clear ();
 
 		/*
@@ -243,7 +243,7 @@ write_nodes (state_type& state, _New_value value)
 	state.nodes_pullu.set_bits<_Index...>(value);
 	state.nodes_pulld.set_bits<_Index...>(not_value);
 	for (const auto index : { _Index ... })
-		state.outputs.insert (index);
+		state.outputs.insert_unique (index);
 }
 
 template <auto... _Index, typename _New_value>
@@ -285,7 +285,7 @@ netlist_6502::netlist_6502 ()
 	so (0);
 
 	for (auto index : range (0, netlist_6502_node_count))
-		state.outputs.insert (index);
+		state.outputs.insert_unique (index);
 
 	eval();
 }

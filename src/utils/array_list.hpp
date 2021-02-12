@@ -26,6 +26,7 @@
 #include <cstddef>
 #include <cassert>
 #include <initializer_list>
+#include <algorithm>
 
 #include "range.hpp"
 
@@ -72,7 +73,7 @@ struct array_list
 		_data[_size++] = std::move(v);				
 	}
 
-	constexpr void push_unique(value_type v) 
+	constexpr void insert_unique_linear(value_type v) 
 	{
 		assert(_size < capacity());
 		if (contains(v))
@@ -165,6 +166,25 @@ struct array_list
 	constexpr auto indexes() const 
 	{
 		return range<std::size_t> { 0u, size() };
+	}
+
+	constexpr auto insert_unique(value_type value)
+	{
+		if (size() >= capacity ())
+			return false;
+
+		auto pos = (std::size_t)std::distance(begin(), 
+			std::lower_bound(begin(), end(), value));
+
+		if (pos < size() && _data[pos] == value)
+			return false;
+
+		push (std::move (value));
+
+		for (std::size_t j = size(); j > pos + 1; --j)
+			std::swap(_data[j - 1],  _data[j - 2]);
+
+		return true;
 	}
 
 private:
