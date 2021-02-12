@@ -236,19 +236,25 @@ requires (sizeof...(_Index) <= sizeof(_Value) * 8)
 static inline void
 write_nodes (state_type& state, _Value value)
 {
-	if constexpr (sizeof ... (_Index) == 1)
-	{
-		state.nodes_pullup.set(_Index...,  value);
-		state.nodes_pulldn.set(_Index..., !value);
-		state.list [state.out].insert (_Index...);
-	}
+//	if constexpr (sizeof ... (_Index) == 1)
+//	{
+//		state.nodes_pullup.set(_Index...,  value);
+//		state.nodes_pulldn.set(_Index..., !value);
+//		state.list [state.out].insert (_Index...);
+//	}
+//	else
+//
+	
+	if constexpr (sizeof...(_Index) != 1)		
+		state.nodes_pulldn.set_bits<_Index...>(_Value(value ^ ~_Value(0u)));
 	else
-	{
-		state.nodes_pullup.set_bits<_Index...>(value);
-		state.nodes_pulldn.set_bits<_Index...>(value ^ 0xffu);
-		for (const auto index : { _Index ... })
-			state.list [state.out].insert (index);
-	}
+		state.nodes_pulldn.set_bits<_Index...>(!value);
+	state.nodes_pullup.set_bits<_Index...>(value);
+	for (const auto index : { _Index ... })
+		state.list [state.out].insert (index);
+
+
+	//}
 	recalculate_node_list (state);
 }
 
