@@ -36,73 +36,8 @@
 
 #include "types.hpp"
 #include "netlist_6502.hpp"
-#include "netlist_6502.inl"
-#include "netlist_6502_dump.inl"
-
-
-struct netlist_6502_static_state_type
-{
-	count_t	nodes_c1c2offset [netlist_6502_node_count + 1];
-	std::pair<nodenum_t, nodenum_t> nodes_c1c2s [netlist_6502_transistor_count * 2];
-	array_list<nodenum_t, netlist_6502_node_count> nodes_gates [netlist_6502_node_count];
-	array_list<nodenum_t, netlist_6502_node_count> nodes_dependant [2][netlist_6502_node_count];
-
-	constexpr netlist_6502_static_state_type ()
-	{
-		using namespace node_names;
-
-		count_t c1c2count [netlist_6502_node_count];
-
-		for (auto& list : nodes_gates					)	list.clear ();
-		for (auto& list : nodes_dependant [0]	)	list.clear ();
-		for (auto& list : nodes_dependant [1]	)	list.clear ();
-		for (auto& node : nodes_c1c2offset		)	node = 0;
-		for (auto& node : c1c2count						) node = 0;
-
-		for (auto&& tindex : range (0, netlist_6502_transistor_count))
-		{
-			c1c2count [netlist_6502_transdefs [tindex].c1]++;
-			c1c2count [netlist_6502_transdefs [tindex].c2]++;
-		}
-
-		/* then sum the counts to find each node's offset into the c1c2 array */
-		count_t c1c2offset = 0u;
-		for (auto&& nindex : range (0, netlist_6502_node_count + 1))
-		{
-			nodes_c1c2offset [nindex] = c1c2offset;
-			if (nindex < netlist_6502_node_count)
-				c1c2offset += c1c2count [nindex];
-		}
-
-		for (auto& node : c1c2count)
-			node = 0;
-
-		for (auto&& tindex : range<uint16_t> (0, netlist_6502_transistor_count))
-		{
-			auto&& [gate, c1, c2] = netlist_6502_transdefs [tindex];
-			nodes_gates [gate].push (tindex);
-			nodes_c1c2s [nodes_c1c2offset [c1] + c1c2count [c1]++] = { tindex, c2 };
-			nodes_c1c2s [nodes_c1c2offset [c2] + c1c2count [c2]++] = { tindex, c1 };
-		}
-
-		for (auto&& nindex : range (0, netlist_6502_node_count))
-		{
-			for (auto&& tindex : nodes_gates [nindex])
-			{
-				auto&& [_, c1, c2] = netlist_6502_transdefs [tindex];
-
-				const auto cond1 = !one_of<vss, vcc> (c1);
-				const auto cond2 = !one_of<vss, vcc> (c2);
-
-				if (cond1) nodes_dependant [0][nindex].insert_unique (c1);
-				if (cond2) nodes_dependant [0][nindex].insert_unique (c2);
-				nodes_dependant [1][nindex].insert_unique (cond1 ? c1 : c2);
-			}
-		}
-	}
-};
-
-static constexpr inline netlist_6502_static_state_type st_state;
+#include "netlist_6502_labels.hpp"
+#include "netlist_6502_transdefs.inl"
 
 struct state_type
 {
@@ -116,7 +51,7 @@ struct state_type
 };
 
 static inline void
-group_add_node (state_type& state, nodenum_t nindex, std::vector<uint16_t>& todo)
+group_add_node (state_type& state, nodenum_t nindex)
 {
 	/*
 	 * We need to stop at vss and vcc, otherwise we'll revisit other groups
@@ -150,14 +85,12 @@ group_add_node (state_type& state, nodenum_t nindex, std::vector<uint16_t>& todo
 
 	/* revisit all transistors that control this node */
 	
-	for (auto&& offset : range (node_to_collector_index [nindex], 
-															node_to_collector_index [nindex+1]))
+	for (auto&& offset : range(node_to_collector_index [nindex], node_to_collector_index [nindex+1]))
 	{
 		auto&& [tindex0, nindex] = node_to_collector [offset];
 		/* if the transistor connects c1 and c2... */
 		if (state.trans_state.get (tindex0))
-			//group_add_node (state, nindex);
-			todo.push_back(nindex);
+			group_add_node (state, nindex);			
 	}
 
 }
@@ -165,21 +98,10 @@ group_add_node (state_type& state, nodenum_t nindex, std::vector<uint16_t>& todo
 static inline void
 group_add_all_nodes (state_type& state, nodenum_t node)
 {	
-	static std::vector<uint16_t> list0;
-	static std::vector<uint16_t> list1;
 	state.group.clear ();
 	state.group_contains_value = contains_nothing;
-
-	list0.clear();
-	group_add_node (state, node, list0);
-	do
-	{
-		std::swap(list0, list1);
-		list0.clear();
-		for(auto&& nindex : list1) 
-			group_add_node (state, nindex, list0);
-	}
-	while(!list0.empty());
+	
+	group_add_node (state, node);
 }
 
 static inline void
@@ -293,7 +215,7 @@ netlist_6502::netlist_6502 ()
 {
 	auto& state = *this->state;
 
-	state.nodes_pullu = netlist_6502_node_is_pullup;
+	state.nodes_pullu = netlist_6502_initial_state;
 	state.nodes_pulld.clear ();
 	state.nodes_value.clear ();
 	state.trans_state.clear ();
@@ -539,135 +461,3 @@ void netlist_6502::ir (std::uint8_t val)
 	using namespace node_names;
 	return write_nodes<notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7>(*state, std::uint8_t(val^0xff));
 }
-
-#if 0
-int main()
-{
-	static constexpr auto row_size = 32u;
-	std::size_t total_gates = 0u;
-	std::size_t current_offset = 0u;
-	std::size_t column_counter = 0u;
-	std::vector<std::size_t> offsets {};
-
-	std::printf("static inline constexpr const std::uint16_t gate_to_node [] = \n{");	
-	for(auto&& all_gates: st_state.nodes_gates)
-	{
-		offsets.push_back (current_offset);
-		current_offset += all_gates.size ();
-		for(auto&& current_gate: all_gates) 
-		{
-			if (!(column_counter % row_size))
-				std::printf("\n\t");
-			std::printf("%-4u, ", current_gate);
-			++column_counter;
-		}
-	}
-	offsets.push_back(current_offset);
-	std::printf("\n};\n\n");		
-
-	column_counter = 0u;
-	std::printf("static inline constexpr const std::uint16_t gate_to_node_index [] = \n{");	
-	for(auto&& current_offs: offsets) 
-	{
-		if (!(column_counter % row_size))
-			std::printf("\n\t");
-		std::printf("%-4zu, ", current_offs);
-		++column_counter;
-	}
-	std::printf("\n};\n\n");		
-	offsets.clear();
-
-	std::printf("static inline constexpr const std::pair<std::uint16_t, std::uint16_t> node_to_collector [] = \n{");	
-	column_counter = 0u;
-	for (auto&& nindex: range (0, netlist_6502_node_count))
-	{
-		auto&& offsets = st_state.nodes_c1c2offset;
-		const auto lhs = offsets[nindex];
-		const auto rhs = offsets[nindex+1];
-		assert (lhs <= rhs);
-		for (auto&& current_offset : range (lhs, rhs))
-		{
-			if (!(column_counter % row_size))
-				std::printf("\n\t");
-			auto&& [tindex, c1c2] = st_state.nodes_c1c2s [current_offset];
-			std::printf("{%-4u, %-4u}, ",	tindex, c1c2);
-			column_counter += 2;
-		}
-	}
-	std::printf("\n};\n\n");		
-
-	std::printf("static inline constexpr const std::uint16_t node_to_collector_index [] = \n{");
-	column_counter = 0u;
-	for (auto&& offset: st_state.nodes_c1c2offset)
-	{
-		if (!(column_counter % row_size))
-			std::printf("\n\t");		
-		std::printf("%-4u, ",	offset);
-		++column_counter;	
-	}
-	std::printf("\n};\n\n");		
-
-	std::printf("static inline constexpr const std::uint16_t node_depends_rhs [] = \n{");
-	column_counter = 0u;
-	current_offset = 0u;
-	offsets.clear();
-	for (auto&& all_nodes: st_state.nodes_dependant[0])
-	{
-		offsets.emplace_back(current_offset);
-		current_offset += all_nodes.size ();
-		for (auto&& current_node: all_nodes)
-		{
-			if (!(column_counter % row_size))
-				std::printf("\n\t");
-			std::printf("%-4u, ", current_node);
-			++column_counter;
-		}
-	}
-	offsets.push_back(current_offset);
-	std::printf("\n};\n\n");		
-	column_counter = 0u;
-	std::printf("static inline constexpr const std::uint16_t node_depends_rhs_index [] = \n{");	
-	for(auto&& current_offs: offsets) 
-	{
-		if (!(column_counter % row_size))
-			std::printf("\n\t");
-		std::printf("%-4zu, ", current_offs);
-		++column_counter;
-	}
-	std::printf("\n};\n\n");		
-	offsets.clear();
-
-	std::printf("static inline constexpr const std::uint16_t node_depends_lhs [] = \n{");
-	column_counter = 0u;
-	current_offset = 0u;
-	offsets.clear();
-	for (auto&& all_nodes: st_state.nodes_dependant[1])
-	{
-		offsets.emplace_back(current_offset);
-		current_offset += all_nodes.size ();
-		for (auto&& current_node: all_nodes)
-		{
-			if (!(column_counter % row_size))
-				std::printf("\n\t");
-			std::printf("%-4u, ", current_node);
-			++column_counter;
-		}
-	}
-	offsets.push_back(current_offset);
-	std::printf("\n};\n\n");		
-	column_counter = 0u;
-	std::printf("static inline constexpr const std::uint16_t node_depends_lhs_index [] = \n{");	
-	for(auto&& current_offs: offsets) 
-	{
-		if (!(column_counter % row_size))
-			std::printf("\n\t");
-		std::printf("%-4zu, ", current_offs);
-		++column_counter;
-	}
-	std::printf("\n};\n\n");		
-	offsets.clear();
-
-
-	return 0;
-}
-#endif

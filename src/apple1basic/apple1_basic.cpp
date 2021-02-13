@@ -148,7 +148,6 @@ init_monitor (netlist_6502& nlsym)
 	step (nlsym);
 }
 
-#if 1
 int main ()
 {
 	// set up memory for user program 
@@ -158,4 +157,3 @@ int main ()
 	for (;;)
 		step (nlsym);
 }
-#endif
