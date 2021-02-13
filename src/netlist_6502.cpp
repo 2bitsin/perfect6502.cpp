@@ -44,7 +44,7 @@ struct state_type
 	bitmap<netlist_6502_node_count>	nodes_pullu;
 	bitmap<netlist_6502_node_count>	nodes_pulld;
 	bitmap<netlist_6502_node_count>	nodes_value;
-	bitmap<netlist_6502_transistor_count>	trans_state;
+	bitmap<netlist_6502_transistor_count>	is_connected;
 	array_set<nodenum_t, netlist_6502_node_count> group;
 	array_set<nodenum_t, netlist_6502_node_count> outputs;
 	group_contains_value_t group_contains_value;
@@ -82,17 +82,14 @@ group_add_node (state_type& state, nodenum_t nindex)
 	default:
 		break;
 	}
-
-	/* revisit all transistors that control this node */
-	
+	/* revisit all transistors that control this node */	
 	for (auto&& offset : range(node_to_collector_index [nindex], node_to_collector_index [nindex+1]))
 	{
 		auto&& [tindex0, nindex] = node_to_collector [offset];
 		/* if the transistor connects c1 and c2... */
-		if (state.trans_state.get (tindex0))
+		if (state.is_connected.get (tindex0))
 			group_add_node (state, nindex);			
 	}
-
 }
 
 static inline void
@@ -132,8 +129,8 @@ recalculate_node (state_type& state, nodenum_t node)
 			continue;
 		state.nodes_value.set (nindex, new_value);
 
-		for (auto&& offset : range(gate_to_node_index [nindex], gate_to_node_index [nindex+1]))
-			state.trans_state.set (gate_to_node[offset], new_value);
+		for (auto&& offset : range(gate_to_transistor_index [nindex], gate_to_transistor_index [nindex+1]))
+			state.is_connected.set (gate_to_transistor[offset], new_value);
 
 		auto&& node_deps_index	= new_value ? node_depends_lhs_index	
 																				: node_depends_rhs_index;
@@ -218,7 +215,7 @@ netlist_6502::netlist_6502 ()
 	state.nodes_pullu = netlist_6502_initial_state;
 	state.nodes_pulld.clear ();
 	state.nodes_value.clear ();
-	state.trans_state.clear ();
+	state.is_connected.clear ();
 	state.group.clear ();
 	state.outputs.clear ();
 	
