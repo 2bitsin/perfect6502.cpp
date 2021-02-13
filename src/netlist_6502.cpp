@@ -26,6 +26,7 @@
 #include <iterator>
 #include <initializer_list>
 #include <stdexcept>
+#include <vector>
 
 #include "utils/bitmap.hpp"
 #include "utils/array_list.hpp"
@@ -36,6 +37,7 @@
 #include "types.hpp"
 #include "netlist_6502.hpp"
 #include "netlist_6502.inl"
+#include "netlist_6502_dump.inl"
 
 
 struct netlist_6502_static_state_type
@@ -114,7 +116,7 @@ struct state_type
 };
 
 static inline void
-group_add_node (state_type& state, nodenum_t nindex)
+group_add_node (state_type& state, nodenum_t nindex, std::vector<uint16_t>& todo)
 {
 	/*
 	 * We need to stop at vss and vcc, otherwise we'll revisit other groups
@@ -147,22 +149,37 @@ group_add_node (state_type& state, nodenum_t nindex)
 	}
 
 	/* revisit all transistors that control this node */
-	auto&& offset = st_state.nodes_c1c2offset;
-	for (auto&& tindex : range (offset [nindex], offset [nindex+1]))
+	
+	for (auto&& offset : range (node_to_collector_index [nindex], 
+															node_to_collector_index [nindex+1]))
 	{
-		auto&& [tindex0, nindex] = st_state.nodes_c1c2s [tindex];
+		auto&& [tindex0, nindex] = node_to_collector [offset];
 		/* if the transistor connects c1 and c2... */
 		if (state.trans_state.get (tindex0))
-			group_add_node (state, nindex);
+			//group_add_node (state, nindex);
+			todo.push_back(nindex);
 	}
+
 }
 
 static inline void
 group_add_all_nodes (state_type& state, nodenum_t node)
-{
+{	
+	static std::vector<uint16_t> list0;
+	static std::vector<uint16_t> list1;
 	state.group.clear ();
 	state.group_contains_value = contains_nothing;
-	group_add_node (state, node);
+
+	list0.clear();
+	group_add_node (state, node, list0);
+	do
+	{
+		std::swap(list0, list1);
+		list0.clear();
+		for(auto&& nindex : list1) 
+			group_add_node (state, nindex, list0);
+	}
+	while(!list0.empty());
 }
 
 static inline void
@@ -192,10 +209,17 @@ recalculate_node (state_type& state, nodenum_t node)
 		if (state.nodes_value.get (nindex) == new_value)
 			continue;
 		state.nodes_value.set (nindex, new_value);
-		for (auto&& tindex : st_state.nodes_gates [nindex])
-			state.trans_state.set (tindex, new_value);
-		for (auto&& nindex : st_state.nodes_dependant [new_value][nindex])
-			state.outputs.insert_unique (nindex);
+
+		for (auto&& offset : range(gate_to_node_index [nindex], gate_to_node_index [nindex+1]))
+			state.trans_state.set (gate_to_node[offset], new_value);
+
+		auto&& node_deps_index	= new_value ? node_depends_lhs_index	
+																				: node_depends_rhs_index;
+		auto&& node_deps				= new_value ? node_depends_lhs				
+																				: node_depends_rhs;
+
+		for (auto&& offset : range(node_deps_index[nindex], node_deps_index[nindex+1]))
+			state.outputs.insert_unique (node_deps[offset]);
 	}
 }
 
@@ -515,3 +539,135 @@ void netlist_6502::ir (std::uint8_t val)
 	using namespace node_names;
 	return write_nodes<notir0, notir1, notir2, notir3, notir4, notir5, notir6, notir7>(*state, std::uint8_t(val^0xff));
 }
+
+#if 0
+int main()
+{
+	static constexpr auto row_size = 32u;
+	std::size_t total_gates = 0u;
+	std::size_t current_offset = 0u;
+	std::size_t column_counter = 0u;
+	std::vector<std::size_t> offsets {};
+
+	std::printf("static inline constexpr const std::uint16_t gate_to_node [] = \n{");	
+	for(auto&& all_gates: st_state.nodes_gates)
+	{
+		offsets.push_back (current_offset);
+		current_offset += all_gates.size ();
+		for(auto&& current_gate: all_gates) 
+		{
+			if (!(column_counter % row_size))
+				std::printf("\n\t");
+			std::printf("%-4u, ", current_gate);
+			++column_counter;
+		}
+	}
+	offsets.push_back(current_offset);
+	std::printf("\n};\n\n");		
+
+	column_counter = 0u;
+	std::printf("static inline constexpr const std::uint16_t gate_to_node_index [] = \n{");	
+	for(auto&& current_offs: offsets) 
+	{
+		if (!(column_counter % row_size))
+			std::printf("\n\t");
+		std::printf("%-4zu, ", current_offs);
+		++column_counter;
+	}
+	std::printf("\n};\n\n");		
+	offsets.clear();
+
+	std::printf("static inline constexpr const std::pair<std::uint16_t, std::uint16_t> node_to_collector [] = \n{");	
+	column_counter = 0u;
+	for (auto&& nindex: range (0, netlist_6502_node_count))
+	{
+		auto&& offsets = st_state.nodes_c1c2offset;
+		const auto lhs = offsets[nindex];
+		const auto rhs = offsets[nindex+1];
+		assert (lhs <= rhs);
+		for (auto&& current_offset : range (lhs, rhs))
+		{
+			if (!(column_counter % row_size))
+				std::printf("\n\t");
+			auto&& [tindex, c1c2] = st_state.nodes_c1c2s [current_offset];
+			std::printf("{%-4u, %-4u}, ",	tindex, c1c2);
+			column_counter += 2;
+		}
+	}
+	std::printf("\n};\n\n");		
+
+	std::printf("static inline constexpr const std::uint16_t node_to_collector_index [] = \n{");
+	column_counter = 0u;
+	for (auto&& offset: st_state.nodes_c1c2offset)
+	{
+		if (!(column_counter % row_size))
+			std::printf("\n\t");		
+		std::printf("%-4u, ",	offset);
+		++column_counter;	
+	}
+	std::printf("\n};\n\n");		
+
+	std::printf("static inline constexpr const std::uint16_t node_depends_rhs [] = \n{");
+	column_counter = 0u;
+	current_offset = 0u;
+	offsets.clear();
+	for (auto&& all_nodes: st_state.nodes_dependant[0])
+	{
+		offsets.emplace_back(current_offset);
+		current_offset += all_nodes.size ();
+		for (auto&& current_node: all_nodes)
+		{
+			if (!(column_counter % row_size))
+				std::printf("\n\t");
+			std::printf("%-4u, ", current_node);
+			++column_counter;
+		}
+	}
+	offsets.push_back(current_offset);
+	std::printf("\n};\n\n");		
+	column_counter = 0u;
+	std::printf("static inline constexpr const std::uint16_t node_depends_rhs_index [] = \n{");	
+	for(auto&& current_offs: offsets) 
+	{
+		if (!(column_counter % row_size))
+			std::printf("\n\t");
+		std::printf("%-4zu, ", current_offs);
+		++column_counter;
+	}
+	std::printf("\n};\n\n");		
+	offsets.clear();
+
+	std::printf("static inline constexpr const std::uint16_t node_depends_lhs [] = \n{");
+	column_counter = 0u;
+	current_offset = 0u;
+	offsets.clear();
+	for (auto&& all_nodes: st_state.nodes_dependant[1])
+	{
+		offsets.emplace_back(current_offset);
+		current_offset += all_nodes.size ();
+		for (auto&& current_node: all_nodes)
+		{
+			if (!(column_counter % row_size))
+				std::printf("\n\t");
+			std::printf("%-4u, ", current_node);
+			++column_counter;
+		}
+	}
+	offsets.push_back(current_offset);
+	std::printf("\n};\n\n");		
+	column_counter = 0u;
+	std::printf("static inline constexpr const std::uint16_t node_depends_lhs_index [] = \n{");	
+	for(auto&& current_offs: offsets) 
+	{
+		if (!(column_counter % row_size))
+			std::printf("\n\t");
+		std::printf("%-4zu, ", current_offs);
+		++column_counter;
+	}
+	std::printf("\n};\n\n");		
+	offsets.clear();
+
+
+	return 0;
+}
+#endif

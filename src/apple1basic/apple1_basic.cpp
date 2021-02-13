@@ -148,12 +148,14 @@ init_monitor (netlist_6502& nlsym)
 	step (nlsym);
 }
 
+#if 1
 int main ()
 {
-	/* set up memory for user program */
+	// set up memory for user program 
 	init_monitor (nlsym);
 
-	/* emulate the 6502! */
+	// emulate the 6502! 
 	for (;;)
 		step (nlsym);
 }
+#endif
