@@ -72,6 +72,17 @@ struct bitmap
 		return !!(store [index / word_size] & m);
 	}
 
+	constexpr bool try_set(std::size_t index, bool value)
+	{
+		const auto what_it_was = get(index);
+		if (what_it_was != value) 
+		{
+			set(index, value);
+			return true;
+		}
+		return false;
+	}
+
 	static constexpr auto size() { return num_bits ; }
 
 	constexpr auto clear() 

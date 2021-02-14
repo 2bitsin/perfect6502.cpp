@@ -45,8 +45,8 @@ struct state_type
 	bitmap<netlist_6502_node_count>	nodes_pulld;
 	bitmap<netlist_6502_node_count>	nodes_value;
 	bitmap<netlist_6502_transistor_count>	is_connected;
-	array_set<nodenum_t, netlist_6502_node_count> group;
-	array_set<nodenum_t, netlist_6502_node_count> outputs;
+	array_set<std::uint16_t, netlist_6502_node_count> group;
+	array_set<std::uint16_t, netlist_6502_node_count> outputs;
 	group_contains_value_t group_contains_value;
 };
 
@@ -83,12 +83,12 @@ group_add_node (state_type& state, nodenum_t nindex)
 		break;
 	}
 	/* revisit all transistors that control this node */	
-	for (auto&& offset : range(node_to_collector_index [nindex], node_to_collector_index [nindex+1]))
+	for (auto&& offset : range(node_bridge_index [nindex], node_bridge_index [nindex+1]))
 	{
-		auto&& [tindex0, nindex] = node_to_collector [offset];
+		auto&& [tindex, nindex0] = node_bridge [offset];
 		/* if the transistor connects c1 and c2... */
-		if (state.is_connected.get (tindex0))
-			group_add_node (state, nindex);			
+		if (state.is_connected.get (tindex))
+			group_add_node (state, nindex0);			
 	}
 }
 
@@ -96,8 +96,7 @@ static inline void
 group_add_all_nodes (state_type& state, nodenum_t node)
 {	
 	state.group.clear ();
-	state.group_contains_value = contains_nothing;
-	
+	state.group_contains_value = contains_nothing;	
 	group_add_node (state, node);
 }
 
@@ -125,17 +124,14 @@ recalculate_node (state_type& state, nodenum_t node)
 
 	for (auto&& nindex : state.group)
 	{
-		if (state.nodes_value.get (nindex) == new_value)
+		if (!state.nodes_value.try_set(nindex, new_value))
 			continue;
-		state.nodes_value.set (nindex, new_value);
 
-		for (auto&& offset : range(gate_to_transistor_index [nindex], gate_to_transistor_index [nindex+1]))
+		for (auto&& offset : range (gate_to_transistor_index [nindex], gate_to_transistor_index [nindex+1]))
 			state.is_connected.set (gate_to_transistor[offset], new_value);
 
-		auto&& node_deps_index	= new_value ? node_depends_lhs_index	
-																				: node_depends_rhs_index;
-		auto&& node_deps				= new_value ? node_depends_lhs				
-																				: node_depends_rhs;
+		auto&& node_deps_index	= new_value ? node_depends_lhs_index	: node_depends_rhs_index;
+		auto&& node_deps				= new_value ? node_depends_lhs				: node_depends_rhs;
 
 		for (auto&& offset : range(node_deps_index[nindex], node_deps_index[nindex+1]))
 			state.outputs.insert_unique (node_deps[offset]);
@@ -146,7 +142,8 @@ static inline void
 recalculate_node_list (state_type& state)
 {
 	/* loop limiter */
-	for (auto j : range (0, 20))
+	static int max = 0;
+	for (auto j : range (0, 100))
 	{
 		/*
 		 * make the secondary list our primary list, use
@@ -218,7 +215,6 @@ netlist_6502::netlist_6502 ()
 	state.is_connected.clear ();
 	state.group.clear ();
 	state.outputs.clear ();
-	
 
 	reset	(0);
 	clock	(1);
