@@ -39,6 +39,12 @@
 #include "netlist_6502_labels.hpp"
 #include "netlist_6502_transdefs.inl"
 
+template <typename _Array, typename _Index, typename _Begin>
+auto make_indexed_range(_Array&& array, _Index&& index, _Begin&& begin)
+{
+	return indexed_range(array, index[begin], index[begin+1]);
+}
+
 struct state_type
 {
 	bitmap<netlist_6502_node_count>	nodes_pullu;
@@ -83,9 +89,8 @@ group_add_node (state_type& state, nodenum_t nindex)
 		break;
 	}
 	/* revisit all transistors that control this node */	
-	for (auto&& offset : range(node_bridge_index [nindex], node_bridge_index [nindex+1]))
-	{
-		auto&& [tindex, nindex0] = node_bridge [offset];
+	for (auto&& [tindex, nindex0] : make_indexed_range(node_bridge, node_bridge_index, nindex))
+	{		 
 		/* if the transistor connects c1 and c2... */
 		if (state.is_connected.get (tindex))
 			group_add_node (state, nindex0);			
@@ -127,14 +132,14 @@ recalculate_node (state_type& state, nodenum_t node)
 		if (!state.nodes_value.try_set(nindex, new_value))
 			continue;
 
-		for (auto&& offset : range (gate_to_transistor_index [nindex], gate_to_transistor_index [nindex+1]))
-			state.is_connected.set (gate_to_transistor[offset], new_value);
+		for (auto&& transistor : make_indexed_range (gate_to_transistor, gate_to_transistor_index, nindex))
+			state.is_connected.set (transistor, new_value);
 
 		auto&& node_deps_index	= new_value ? node_depends_lhs_index	: node_depends_rhs_index;
 		auto&& node_deps				= new_value ? node_depends_lhs				: node_depends_rhs;
 
-		for (auto&& offset : range(node_deps_index[nindex], node_deps_index[nindex+1]))
-			state.outputs.insert_unique (node_deps[offset]);
+		for (auto&& nindex : make_indexed_range(node_deps, node_deps_index, nindex))
+			state.outputs.insert_unique (nindex);
 	}
 }
 

@@ -84,3 +84,83 @@ private:
 
 template <typename _Lhs, typename _Rhs>
 range(_Lhs&&, _Rhs&&) -> range<std::common_type_t<_Lhs, _Rhs>>;
+
+
+template <typename _Index, typename _Array>
+struct indexed_range
+{
+	using index_type = _Index;
+	using array_type = _Array;
+
+	struct iterator
+	{
+	
+		constexpr iterator(array_type& _array, index_type _index)
+		:	_array{ &_array },
+			_index{ _index }
+		{}
+	
+		constexpr iterator(const iterator&) = default;
+		constexpr iterator(iterator&&) = default;
+
+		constexpr iterator& operator = (const iterator& prev) {
+			this->~iterator();
+			new (this) iterator(prev._array, prev._index);
+			return *this;
+		};
+
+		constexpr iterator& operator = (iterator&&) = default;
+	
+		constexpr auto& operator *  () const { return (*_array) [_index]; }
+		constexpr auto& operator ++ () { ++_index; return *this; }
+		constexpr auto& operator -- () { --_index; return *this; }
+
+		constexpr auto operator ++ (int)  
+		{
+			iterator tmp { *this };
+			++*this;
+			return tmp;
+		}
+		constexpr auto operator -- (int)
+		{
+			iterator tmp { *this };
+			--*this;
+			return tmp;
+		}
+
+		constexpr bool operator <		(const iterator& rhs) const { return _index <  rhs._index; }
+		constexpr bool operator ==	(const iterator& rhs) const { return _index == rhs._index; }
+
+		constexpr auto operator <=> (const iterator&) const = default;
+	
+	private:
+		array_type* _array;
+		index_type  _index;
+	};
+
+
+	constexpr indexed_range(array_type& _array, index_type _begin, index_type _end)
+	: _array	{ _array },
+		_begin	{ std::move (_begin) }, 
+		_end		{ std::move	(_end)	 } 
+	{}
+
+	constexpr indexed_range() = default;
+	constexpr indexed_range(const indexed_range&) = default;
+	constexpr indexed_range(indexed_range&&) = default;
+	constexpr indexed_range& operator = (const indexed_range&) = default;
+	constexpr indexed_range& operator = (indexed_range&&) = default;
+
+	constexpr auto begin()	const { return iterator( _array, _begin	)	;	}
+	constexpr auto end()		const { return iterator( _array, _end		)	;	}
+	constexpr auto cbegin() const { return iterator( _array, _begin	)	;	}
+	constexpr auto cend()		const { return iterator( _array, _end		)	;	}
+
+private:
+	array_type& _array;
+	index_type	_begin;
+	index_type	_end;
+};
+
+template <typename _Array, typename _Lhs, typename _Rhs>
+indexed_range(_Array&, _Lhs&&, _Rhs&&) -> indexed_range<_Array, std::common_type_t<_Lhs, _Rhs>>;
