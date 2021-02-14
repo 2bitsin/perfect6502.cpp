@@ -149,13 +149,7 @@ recalculate_node_list (state_type& state)
 	/* loop limiter */
 	static int max = 0;
 	for (auto j : range (0, 100))
-	{
-		/*
-		 * make the secondary list our primary list, use
-		 * the data storage of the primary list as the
-		 * secondary list
-		 */
-		
+	{		
 		if (state.outputs.empty ())
 			break;
 		auto inputs = state.outputs.as_array();
