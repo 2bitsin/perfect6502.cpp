@@ -220,7 +220,7 @@ netlist_6502::netlist_6502 ()
 	ready	(1);
 	irq	(1);
 	nmi	(1);
-	so (0);
+	so (1);
 
 	for (auto index : range (0, netlist_6502_node_count))
 		state.outputs.insert_unique (index);
@@ -372,7 +372,8 @@ auto netlist_6502::s () const -> std::uint8_t
 auto netlist_6502::p () const -> std::uint8_t
 {
 	using namespace node_names;
-	return read_nodes<uint8_t, p0, p1, p2, p3, p4, p5, p6, p7>(*state);
+	const auto value = read_nodes<uint8_t, P0, P1, P2, P3, P4, P5, P6, P7>(*state);
+	return (value & 0b1100'1111) | 0b0010'0000;
 }
 
 auto netlist_6502::pc () const -> std::uint16_t
@@ -426,7 +427,8 @@ void netlist_6502::s (std::uint8_t val)
 void netlist_6502::p (std::uint8_t val)
 { 
 	using namespace node_names;
-	return write_nodes<p0, p1, p2, p3, p4, p5, p6, p7>(*state, val);
+	write_nodes<P0, P1, P2, P3>(*state, val & 0x0f);
+	write_nodes<P6, P7>(*state, (val >> 6)&3);
 }
 
 void netlist_6502::pc (std::uint16_t val)

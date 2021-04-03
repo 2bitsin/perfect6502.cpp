@@ -119,7 +119,7 @@ struct bitmap
 
 	template <auto... _Index, typename _New_type>
 	requires (sizeof... (_Index) <= sizeof (_New_type) * 8 && sizeof... (_Index) >= 1u)
-	constexpr auto set_bits(_New_type&& value) 
+	constexpr auto set_bits(_New_type value) 
 	{
 		if constexpr (sizeof...(_Index) == 1u)
 			set(_Index..., value);

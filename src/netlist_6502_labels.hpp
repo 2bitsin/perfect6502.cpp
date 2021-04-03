@@ -52,8 +52,8 @@ namespace node_names
 	inline static constexpr const auto p1 = 25;
 	inline static constexpr const auto p2 = 26;
 	inline static constexpr const auto p3 = 27;
-	inline static constexpr const auto p4 = 28;
-	inline static constexpr const auto p5 = 29;
+	inline static constexpr const auto p4 = 28;  // brk ?
+	inline static constexpr const auto p5 = 183; // vcc
 	inline static constexpr const auto p6 = 30;
 	inline static constexpr const auto p7 = 31;
 	inline static constexpr const auto s0 = 32;
@@ -209,5 +209,15 @@ namespace node_names
 	inline static constexpr const auto t5 = 182;
 	inline static constexpr const auto vcc = 183;
 	inline static constexpr const auto vss = 184;
+	
+	inline static constexpr const auto P0 = 238 ;
+	inline static constexpr const auto P1 = 1326;
+	inline static constexpr const auto P2 = 906	;
+	inline static constexpr const auto P3 = 208	;
+	inline static constexpr const auto P4 = p4 ;
+	inline static constexpr const auto P5 = p5 ;
+	inline static constexpr const auto P6 = 670	;
+	inline static constexpr const auto P7 = 939	;
+
 }
 
